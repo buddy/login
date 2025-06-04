@@ -5,12 +5,11 @@
   "main": "index.js",
   "scripts": {
     "build": "pnpm lint && esbuild src/index.ts --bundle --platform=node --target=node20 --minify --outdir=./dist",
-    "start:local": "node dist/index.js",
-    "start:action": "act",
+    "start": "act",
     "format": "prettier --write .",
     "lint": "eslint .",
     "lint:types": "tsc --skipLibCheck --noEmit",
-    "test": "pnpm build && pnpm start:local && pnpm start:action"
+    "test": "pnpm lint && pnpm lint:types && pnpm build && pnpm start"
   },
   "keywords": [],
   "author": "",
