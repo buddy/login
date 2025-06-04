@@ -1,0 +1,25 @@
+{
+  "name": "login",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs --out-dir dist",
+    "test": "node -v"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.11.0",
+  "dependencies": {
+    "@actions/core": "1.11.1",
+    "@actions/github": "6.0.1",
+    "install": "0.13.0",
+    "npm": "11.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.17.57",
+    "tsup": "8.5.0",
+    "typescript": "5.8.3"
+  }
+}
