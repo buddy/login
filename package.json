@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsup src/index.ts --format cjs --out-dir dist",
-    "test": "node -v"
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --minify --outdir=./dist",
+    "start:local": "node dist/index.js",
+    "start:action": "act",
+    "test": "pnpm build && pnpm start:local && pnpm start:action"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +21,7 @@
   },
   "devDependencies": {
     "@types/node": "20.17.57",
-    "tsup": "8.5.0",
+    "esbuild": "0.25.5",
     "typescript": "5.8.3"
   }
 }
