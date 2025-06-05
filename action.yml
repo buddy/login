@@ -12,7 +12,7 @@ inputs:
     description: 'Custom API URL for on-premise Buddy installations. Cannot be used with region.'
     required: false
   provider_id:
-    description: 'UUID of your Buddy OIDC provider configuration'
+    description: 'UUID of your Buddy OIDC provider configuration. Test'
     required: true
   audience:
     description: 'Audience for which the GitHub OIDC provider token is intended'
