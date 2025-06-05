@@ -4,6 +4,9 @@ jobs:
   hello_world_job:
     runs-on: ubuntu-latest
     name: buddy/login test action
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
