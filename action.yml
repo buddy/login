@@ -5,14 +5,14 @@ runs:
   main: 'dist/index.js'
 inputs:
   region:
-    description: 'Buddy region (EU or US). Cannot be used with api_url.'
+    description: 'Buddy region (EU or US). Cannot be used with api_url'
     default: 'US'
     required: false
   api_url:
-    description: 'Custom API URL for on-premise Buddy installations. Cannot be used with region.'
+    description: 'Custom API URL for on-premise Buddy installations. Cannot be used with region'
     required: false
   provider_id:
-    description: 'UUID of your Buddy OIDC provider configuration. Test'
+    description: 'UUID of your Buddy OIDC provider configuration'
     required: true
   audience:
     description: 'Audience for which the GitHub OIDC provider token is intended'
