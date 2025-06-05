@@ -20,6 +20,3 @@ inputs:
 branding:
   icon: 'circle'
   color: 'blue'
-outputs:
-  data:
-    description: 'Authentication data returned by Buddy'

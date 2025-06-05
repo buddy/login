@@ -15,10 +15,11 @@ available.**
 
 ### `region`
 
-**Required** The Buddy region where your workspace is located.
+**Optional** The Buddy region where your workspace is located.
 
 - Supported values: `EU`, `US`
 - Default: `US`
+- Cannot be used together with `api_url`
 
 ### `provider_id`
 
@@ -31,27 +32,36 @@ available.**
 
 **Optional** The audience for which the GitHub OIDC provider token is intended.
 
-- Default: Uses Buddy's default audience if not specified
+- If not specified, uses GitHub's default audience
 
 ### `api_url`
 
 **Optional** Custom API URL for on-premise Buddy installations.
 
-- When provided, overrides the `region` parameter
+- Cannot be used together with `region`
+- Must be an HTTPS URL
 - Useful for self-hosted Buddy instances
 
-## Outputs
+## Environment Variables
 
-### `data`
+After successful authentication, this action sets the following environment variable:
 
-The authentication data returned by Buddy (currently mocked).
+### `BUDDY_TOKEN`
 
-**Note: In the final implementation, this action will set the `BUDDY_TOKEN` environment variable instead of using
-outputs.**
+The Buddy Personal Access Token that can be used to authenticate API requests in subsequent workflow steps.
 
 ## Usage
 
 ### Basic Usage
+
+```yaml
+- name: Login to Buddy
+  uses: buddy/login@v1
+  with:
+    provider_id: c778e240-9750-4a8f-b04a-5be9045badd3
+```
+
+### With Region (EU)
 
 ```yaml
 - name: Login to Buddy
@@ -67,9 +77,19 @@ outputs.**
 - name: Login to Buddy
   uses: buddy/login@v1
   with:
-    region: US
+    region: EU
     provider_id: c778e240-9750-4a8f-b04a-5be9045badd3
     audience: myaudience
+```
+
+### With Custom API URL (On-Premise)
+
+```yaml
+- name: Login to Buddy
+  uses: buddy/login@v1
+  with:
+    api_url: https://buddy.company.com
+    provider_id: c778e240-9750-4a8f-b04a-5be9045badd3
 ```
 
 ### Using in Subsequent Steps
@@ -105,7 +125,7 @@ The `id-token: write` permission is necessary for the action to request GitHub's
 
 ```yaml
 name: Deploy with Buddy
-on: [ push ]
+on: [push]
 
 jobs:
   deploy:
@@ -122,6 +142,7 @@ jobs:
         with:
           region: EU
           provider_id: c778e240-9750-4a8f-b04a-5be9045badd3
+          audience: myaudience
 
       - name: Trigger Buddy Pipeline
         run: |
@@ -142,7 +163,7 @@ jobs:
 1. The action requests a JWT token from GitHub's OIDC provider using the specified audience
 2. It sends this JWT token along with your provider ID to Buddy's authentication API
 3. Buddy validates the token and returns a short-lived PAT
-4. The PAT is made available as the `BUDDY_TOKEN` environment variable for subsequent steps
+4. The PAT is set as the `BUDDY_TOKEN` environment variable for subsequent steps
 
 ## Security Considerations
 

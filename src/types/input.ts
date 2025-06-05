@@ -6,7 +6,7 @@ interface IInputBase {
 }
 
 interface IInputWithRegion extends IInputBase {
-  region: typeof REGIONS[number]
+  region: (typeof REGIONS)[number]
   apiUrl?: never
 }
 

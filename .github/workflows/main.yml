@@ -1,4 +1,4 @@
-on: [ push ]
+on: [push, workflow_dispatch]
 
 jobs:
   hello_world_job:
@@ -12,10 +12,15 @@ jobs:
         uses: actions/checkout@v4
       - name: Buddy login action step
         uses: ./
-        id: buddy_login
         with:
           provider_id: 'c778e240-9750-4a8f-b04a-5be9045badd3'
           region: 'EU'
-      - name: Get the output
+      - name: Test BUDDY_TOKEN is set
         run: |
-          echo "Fetched data is ${{ steps.buddy_login.outputs.data }}"
+          if [ -z "$BUDDY_TOKEN" ]; then
+            echo "Error: BUDDY_TOKEN is not set"
+            exit 1
+          else
+            echo "Success: BUDDY_TOKEN is set"
+            echo "Token starts with: ${BUDDY_TOKEN:0:10}..."
+          fi

@@ -1,11 +1,10 @@
-import { setFailed, setOutput } from '@actions/core'
+import { exportVariable, setFailed } from '@actions/core'
 import { login } from '@/login'
 import { normalizeError } from '@/utils/error/normalizeError'
 
-
 login()
-  .then(({ data }) => {
-    setOutput('data', data)
+  .then(({ buddyToken }) => {
+    exportVariable('BUDDY_TOKEN', buddyToken)
     process.exit(0)
   })
   .catch((error: unknown) => {

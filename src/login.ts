@@ -1,21 +1,23 @@
 import { getInputs } from '@/utils/action/getInputs'
 import { getIDToken } from '@actions/core'
-import { IOutput } from '@/types/output'
 import { IInput } from '@/types/input'
+import { IOutput } from '@/types/output'
 
 export async function login(): Promise<IOutput> {
   const inputs = getInputs()
   const jwt = await getIDToken(inputs.audience)
-  const data = await mockGetBuddyToken(inputs.region, inputs.providerId, jwt)
-  return { data }
+  const buddyToken = await mockGetBuddyToken(inputs, jwt)
+
+  return { buddyToken }
 }
 
-
-async function mockGetBuddyToken(region: IInput['region'], providerId: IInput['providerId'], jwt: string): Promise<string> {
+async function mockGetBuddyToken(inputs: IInput, jwt: string): Promise<string> {
   void jwt
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(`mocked-token-for-${region}-${providerId}`)
+      resolve(
+        `mocked-token-for-${inputs.providerId}-${inputs.region || inputs.apiUrl}`,
+      )
     }, 1000)
   })
 }

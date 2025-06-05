@@ -12,7 +12,9 @@ export function getInputs(): IInput {
   }
 
   if (!isAudienceValid(audience)) {
-    throw new Error('Invalid audience input. Must be a valid string or undefined.')
+    throw new Error(
+      'Invalid audience input. Must be a valid string or undefined.',
+    )
   }
 
   if (apiUrl) {
@@ -23,29 +25,35 @@ export function getInputs(): IInput {
     return {
       apiUrl,
       providerId,
-      audience
+      audience,
     }
   } else {
     const region = getInput('region', { required: true })
 
     if (!isRegionValid(region)) {
-      throw new Error(`Invalid region input: ${region}. Must be one of ${Object.values(REGIONS).join(', ')}`)
+      throw new Error(
+        `Invalid region input: ${region}. Must be one of ${Object.values(REGIONS).join(', ')}`,
+      )
     }
 
     return {
       region,
       providerId,
-      audience
+      audience,
     }
   }
 }
 
-function isRegionValid(region: string): region is typeof REGIONS[number] {
-  return REGIONS.includes(region as typeof REGIONS[number])
+function isRegionValid(region: string): region is (typeof REGIONS)[number] {
+  return REGIONS.includes(region as (typeof REGIONS)[number])
 }
 
-function isProviderIdValid(providerId: string): providerId is `${string}-${string}-${string}-${string}-${string}` {
-  return /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(providerId)
+function isProviderIdValid(
+  providerId: string,
+): providerId is `${string}-${string}-${string}-${string}-${string}` {
+  return /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(
+    providerId,
+  )
 }
 
 function isAudienceValid(audience: string | undefined): boolean {

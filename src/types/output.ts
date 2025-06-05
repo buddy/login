@@ -1,3 +1,3 @@
 export interface IOutput {
-  data: string;
+  buddyToken: string
 }
