@@ -1,21 +1,22 @@
-on: [push, workflow_dispatch]
+on: [ push, workflow_dispatch ]
 
 jobs:
-  hello_world_job:
+  test_buddy_login:
     runs-on: ubuntu-latest
-    name: buddy/login test action
+    name: Test Buddy Login Action
     permissions:
       contents: read
       id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Buddy login action step
+      - name: Login to Buddy
+        id: buddy_login
         uses: ./
         with:
           provider_id: 'c778e240-9750-4a8f-b04a-5be9045badd3'
           region: 'EU'
-      - name: Test BUDDY_TOKEN is set
+      - name: Test BUDDY_TOKEN environment variable
         run: |
           if [ -z "$BUDDY_TOKEN" ]; then
             echo "Error: BUDDY_TOKEN is not set"
@@ -23,4 +24,13 @@ jobs:
           else
             echo "Success: BUDDY_TOKEN is set"
             echo "Token starts with: ${BUDDY_TOKEN:0:10}..."
+          fi
+      - name: Test step output
+        run: |
+          if [ -z "${{ steps.buddy_login.outputs.token }}" ]; then
+            echo "Error: Step output token is not set"
+            exit 1
+          else
+            echo "Success: Step output token is set"
+            echo "Token from output starts with: ${{ steps.buddy_login.outputs.token }}" | cut -c1-10
           fi
