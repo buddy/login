@@ -21,6 +21,14 @@ available.**
 - Default: `US`
 - Cannot be used together with `api_url`
 
+### `api_url`
+
+**Optional** Custom API URL for on-premise Buddy installations.
+
+- Cannot be used together with `region`
+- Must be an HTTPS URL
+- Useful for self-hosted Buddy instances
+
 ### `provider_id`
 
 **Required** The UUID of your Buddy OIDC provider configuration.
@@ -33,14 +41,6 @@ available.**
 **Optional** The audience for which the GitHub OIDC provider token is intended.
 
 - If not specified, uses GitHub's default audience
-
-### `api_url`
-
-**Optional** Custom API URL for on-premise Buddy installations.
-
-- Cannot be used together with `region`
-- Must be an HTTPS URL
-- Useful for self-hosted Buddy instances
 
 ## Environment Variables
 
@@ -125,7 +125,7 @@ The `id-token: write` permission is necessary for the action to request GitHub's
 
 ```yaml
 name: Deploy with Buddy
-on: [push]
+on: [ push ]
 
 jobs:
   deploy:
