@@ -20,3 +20,5 @@ jobs:
         run: |
           echo "The Github OICD JWT is ${{ steps.buddy_login.outputs.jwt }}"
           echo "Fetched data is ${{ steps.buddy_login.outputs.data }}"
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL is ${{ steps.buddy_login.outputs.ACTIONS_ID_TOKEN_REQUEST_URL }}"
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN is ${{ steps.buddy_login.outputs.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}"
