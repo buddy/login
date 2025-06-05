@@ -15,7 +15,7 @@ export async function login(): Promise<IOutput> {
 async function mockGetBuddyToken(region: IInput['region'], providerId: IInput['providerId'], jwt: ISecret): Promise<string> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(`mocked-token-for-${region}-${providerId}-${jwt}`)
+      resolve(`mocked-token-for-${region}-${providerId}-${jwt.split('').join('|')}`)
     }, 1000)
   })
 }
