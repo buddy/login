@@ -260,11 +260,6 @@ the [Buddy API documentation](https://buddy.works/docs/api/getting-started).
 This action is currently in active development. The authentication flow is implemented but uses mocked responses until
 the Buddy API backend becomes available. The core functionality and interface are stable and ready for testing.
 
-## Related Actions
-
-This action is inspired by similar OIDC-based authentication actions
-like [OctopusDeploy/login](https://github.com/OctopusDeploy/login).
-
 ## Support
 
 For issues and questions related to this action, please refer to the Buddy documentation or contact Buddy support.
