@@ -7,17 +7,16 @@ import { IInput } from '@/types/input'
 export async function login(): Promise<IOutput> {
   const inputs = getInputs()
   const jwt = await getIDToken(inputs.audience) as ISecret
-  const ACTIONS_ID_TOKEN_REQUEST_TOKEN = process.env['ACTIONS_ID_TOKEN_REQUEST_TOKEN']?.split('').join('|')
-  const ACTIONS_ID_TOKEN_REQUEST_URL = process.env['ACTIONS_ID_TOKEN_REQUEST_URL']
   const data = await mockGetBuddyToken(inputs.region, inputs.providerId, jwt)
-  return { jwt, data, ACTIONS_ID_TOKEN_REQUEST_TOKEN, ACTIONS_ID_TOKEN_REQUEST_URL }
+  return { jwt, data }
 }
 
 
 async function mockGetBuddyToken(region: IInput['region'], providerId: IInput['providerId'], jwt: ISecret): Promise<string> {
+  void jwt
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(`mocked-token-for-${region}-${providerId}-${jwt.split('').join('|')}`)
+      resolve(`mocked-token-for-${region}-${providerId}`)
     }, 1000)
   })
 }

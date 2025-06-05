@@ -12,8 +12,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Get vars
         run: |
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL is: $ACTIONS_ID_TOKEN_REQUEST_URL"
-          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN is $ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+          echo "$ACTIONS_ID_TOKEN_REQUEST_URL"
+          echo "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" | sed 's/./& /g'
       - name: Buddy login action step
         uses: ./
         id: buddy_login
