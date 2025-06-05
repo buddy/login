@@ -11,7 +11,7 @@ inputs:
     description: 'Provider ID of ?'
     required: true
   audience:
-    description: 'Audience of ?'
+    description: 'Audience for which the GitHub OIDC provider token is intended for'
     required: false
     branding:
       icon: 'circle'

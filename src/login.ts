@@ -1,9 +1,11 @@
 import { getInputs } from '@/utils/action/getInputs'
+import { getIDToken } from '@actions/core'
 
 export async function login() {
   const inputs = getInputs()
+  const jwt = await getIDToken(inputs.audience)
   await Promise.resolve().then(() => {
   })
-  return { output: inputs.providerId, message: 'Login successful' }
+  return { output: jwt }
 }
 

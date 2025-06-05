@@ -35,6 +35,6 @@ function isProviderIdValid(providerId: string): providerId is IInput['providerId
 }
 
 function isAudienceValid(audience: string | undefined): audience is IInput['audience'] {
-  if (!audience) return true
+  if (audience === undefined) return true
   return /^[a-zA-Z0-9-._~:/?#@!$&'()*+,;=]+$/.test(audience)
 }
