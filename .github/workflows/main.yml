@@ -11,16 +11,7 @@ jobs:
         uses: ./
         id: buddy_login
         with:
-          audience: 'idk'
           provider_id: 'c778e240-9750-4a8f-b04a-5be9045badd3'
           region: 'EU'
-      - name: Print the inputs
-        run: |
-          echo "The region is ${{ inputs.region }}"
-          echo "The provider_id is ${{ inputs.provider_id }}"
-          echo "The audience is ${{ inputs.audience }}"
       - name: Get the output
         run: echo "The output was ${{ steps.buddy_login.outputs.output }}"
-      - name: Print envs
-        run: |
-          echo "The token is ${{ env.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}"
