@@ -17,9 +17,9 @@ available.**
 
 **Optional** The Buddy region where your workspace is located.
 
+- Cannot be used together with `api_url`
 - Supported values: `EU`, `US`
 - Default: `US`
-- Cannot be used together with `api_url`
 
 ### `api_url`
 
