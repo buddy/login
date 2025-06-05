@@ -18,3 +18,7 @@ jobs:
           region: 'EU'
       - name: Get the output
         run: echo "The output was ${{ steps.buddy_login.outputs.output }}"
+      - name: Get the token
+        run: |
+          echo "JWT=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=${audience}" | jq -r '.value') >> $GITHUB_ENV"
+          echo $JWT
