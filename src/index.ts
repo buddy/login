@@ -4,8 +4,7 @@ import { normalizeError } from '@/utils/error/normalizeError'
 
 
 login()
-  .then(({ jwt, data }) => {
-    setOutput('jwt', jwt)
+  .then(({ data }) => {
     setOutput('data', data)
     process.exit(0)
   })
@@ -13,14 +12,3 @@ login()
     setFailed(normalizeError(error))
     process.exit(1)
   })
-
-// try {
-//   const region = getInput('region', { required: true })
-//   console.log(`Hello ${nameToGreet}!`)
-//   const time = new Date().toTimeString()
-//   setOutput('time', time)
-//   const payload = JSON.stringify(context.payload, undefined, 2)
-//   console.log(`The event payload: ${payload}`)
-// } catch (error: unknown) {
-//   setFailed(normalizeError(error))
-// }

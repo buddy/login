@@ -10,10 +10,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Get vars
-        run: |
-          echo "$ACTIONS_ID_TOKEN_REQUEST_URL"
-          echo "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" | sed 's/./& /g'
       - name: Buddy login action step
         uses: ./
         id: buddy_login
@@ -22,5 +18,4 @@ jobs:
           region: 'EU'
       - name: Get the output
         run: |
-          echo "The Github OICD JWT is ${{ steps.buddy_login.outputs.jwt }}"
           echo "Fetched data is ${{ steps.buddy_login.outputs.data }}"
