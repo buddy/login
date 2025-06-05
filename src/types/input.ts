@@ -1,7 +1,18 @@
 import { REGIONS } from '@/const/region'
 
-export interface IInput {
-  region: typeof REGIONS[number]
+interface IInputBase {
   providerId: `${string}-${string}-${string}-${string}-${string}`
   audience?: string
 }
+
+interface IInputWithRegion extends IInputBase {
+  region: typeof REGIONS[number]
+  apiUrl?: never
+}
+
+interface IInputWithApiUrl extends IInputBase {
+  region?: never
+  apiUrl: string
+}
+
+export type IInput = IInputWithRegion | IInputWithApiUrl

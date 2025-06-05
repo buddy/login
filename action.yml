@@ -1,21 +1,25 @@
-name: 'Hello World'
-description: 'Greet someone and record the time'
+name: 'Buddy Login'
+description: 'Authenticate with Buddy CI/CD platform using GitHub OIDC'
 runs:
   using: 'node20'
   main: 'dist/index.js'
 inputs:
   region:
-    description: 'Buddy region'
-    required: true
+    description: 'Buddy region (EU or US). Cannot be used with api_url.'
+    default: 'US'
+    required: false
+  api_url:
+    description: 'Custom API URL for on-premise Buddy installations. Cannot be used with region.'
+    required: false
   provider_id:
-    description: 'Provider ID of ?'
+    description: 'UUID of your Buddy OIDC provider configuration'
     required: true
   audience:
-    description: 'Audience for which the GitHub OIDC provider token is intended for'
+    description: 'Audience for which the GitHub OIDC provider token is intended'
     required: false
-    branding:
-      icon: 'circle'
-      color: 'blue'
+branding:
+  icon: 'circle'
+  color: 'blue'
 outputs:
-  output:
-    description: 'Some output, not sure what yet'
+  data:
+    description: 'Authentication data returned by Buddy'

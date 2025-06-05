@@ -33,7 +33,7 @@ available.**
 
 - Default: Uses Buddy's default audience if not specified
 
-### `api_url` (Planned)
+### `api_url`
 
 **Optional** Custom API URL for on-premise Buddy installations.
 
