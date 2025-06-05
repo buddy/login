@@ -17,6 +17,9 @@ inputs:
   audience:
     description: 'Audience for which the GitHub OIDC provider token is intended'
     required: false
+outputs:
+  token:
+    description: 'Buddy Personal Access Token that can be used to authenticate API requests in subsequent workflow steps'
 branding:
   icon: 'circle'
   color: 'blue'

@@ -125,7 +125,7 @@ The `id-token: write` permission is necessary for the action to request GitHub's
 
 ```yaml
 name: Deploy with Buddy
-on: [ push ]
+on: [push]
 
 jobs:
   deploy:
