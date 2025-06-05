@@ -4,8 +4,9 @@ import { normalizeError } from '@/utils/error/normalizeError'
 
 
 login()
-  .then(({ output }) => {
-    setOutput('output', output)
+  .then(({ jwt, data }) => {
+    setOutput('jwt', jwt)
+    setOutput('data', data)
     process.exit(0)
   })
   .catch((error: unknown) => {

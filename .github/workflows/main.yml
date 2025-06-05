@@ -17,8 +17,6 @@ jobs:
           provider_id: 'c778e240-9750-4a8f-b04a-5be9045badd3'
           region: 'EU'
       - name: Get the output
-        run: echo "The output was ${{ steps.buddy_login.outputs.output }}"
-      - name: Get the token
         run: |
-          echo "JWT=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=${audience}" | jq -r '.value') >> $GITHUB_ENV"
-          echo $JWT
+          echo "The Github OICD JWT is ${{ steps.buddy_login.outputs.jwt }}"
+          echo "Fetched data is ${{ steps.buddy_login.outputs.data }}"
