@@ -99,7 +99,6 @@ export async function exchangeTokenWithBuddy(
     console.log(`[DEBUG] Endpoint: ${endpoint}`)
     console.log(`[DEBUG] Provider ID: ${input.providerId}`)
     console.log(`[DEBUG] Audience: ${input.audience || 'default'}`)
-    console.log(`[DEBUG] Token length: ${String(githubToken.length)}`)
   }
 
   try {
@@ -122,7 +121,7 @@ export async function exchangeTokenWithBuddy(
 
     if (input.debug) {
       console.log(`[DEBUG] Response status: ${String(response.status)}`)
-      console.log(`[DEBUG] Response body: ${responseText}`)
+      // Never log response details that could reveal token information
     }
 
     if (!response.ok) {
@@ -149,7 +148,7 @@ export async function exchangeTokenWithBuddy(
       }
 
       throw new Error(
-        `${errorMessage}\nStatus: ${String(response.status)} ${response.statusText}\nResponse: ${responseText}`,
+        `${errorMessage}\nStatus: ${String(response.status)} ${response.statusText}`,
       )
     }
 
@@ -170,7 +169,7 @@ export async function exchangeTokenWithBuddy(
       if (responseText.trim()) {
         return responseText.trim()
       }
-      throw new Error(`Invalid response format: ${responseText}`)
+      throw new Error(`Invalid response format: Not a valid token or JSON`)
     }
 
     // Try different possible token field names in JSON response
@@ -178,20 +177,16 @@ export async function exchangeTokenWithBuddy(
 
     if (!token || typeof token !== 'string') {
       if (input.debug) {
-        console.log(
-          '[DEBUG] Full response object:',
-          JSON.stringify(data, null, 2),
-        )
+        // Never log the actual response as it might contain sensitive data
+        console.log('[DEBUG] Response was valid JSON but no token field found')
       }
       throw new Error(
-        'No token found in response. Check the response structure in debug mode.',
+        'No token found in response. Expected fields: token, access_token, or buddy_token',
       )
     }
 
     if (input.debug) {
-      console.log(
-        `[DEBUG] Token received (first 8 chars): ${token.substring(0, 8)}...`,
-      )
+      console.log(`[DEBUG] Token successfully extracted from JSON response`)
     }
 
     return token

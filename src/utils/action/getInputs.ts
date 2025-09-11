@@ -63,40 +63,48 @@ function isProviderIdValid(
   // Strict UUID v4 validation
   // Format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
   // where y is one of [8, 9, a, b]
-  const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-  
+  const uuidV4Pattern =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
   if (!uuidV4Pattern.test(providerId)) {
     return false
   }
-  
+
   // Additional check: ensure it's lowercase (common UUID format)
-  if (providerId !== providerId.toLowerCase() && providerId !== providerId.toUpperCase()) {
-    console.warn('Warning: Provider ID contains mixed case. Consider using lowercase UUID format.')
+  if (
+    providerId !== providerId.toLowerCase() &&
+    providerId !== providerId.toUpperCase()
+  ) {
+    console.warn(
+      'Warning: Provider ID contains mixed case. Consider using lowercase UUID format.',
+    )
   }
-  
+
   return true
 }
 
 function isAudienceValid(audience: string | undefined): boolean {
   if (audience === undefined) return true
-  
+
   // Check length constraints
   if (audience.length === 0) {
     throw new Error('Audience cannot be an empty string')
   }
-  
+
   if (audience.length > 255) {
     throw new Error('Audience must be less than 256 characters')
   }
-  
+
   // Allow common URI characters and identifiers
   // Based on RFC 3986 unreserved characters plus some common delimiters
   const validPattern = /^[a-zA-Z0-9-._~:/?#@!$&'()*+,;=]+$/
-  
+
   if (!validPattern.test(audience)) {
-    throw new Error('Audience contains invalid characters. Only alphanumeric and URI-safe characters are allowed.')
+    throw new Error(
+      'Audience contains invalid characters. Only alphanumeric and URI-safe characters are allowed.',
+    )
   }
-  
+
   return true
 }
 
