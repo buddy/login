@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "pnpm lint && esbuild src/index.ts --bundle --platform=node --target=node20 --minify --outdir=./dist",
+    "build": "pnpm lint && esbuild src/index.ts --bundle --platform=node --target=node24 --minify --outdir=./dist",
     "start": "act --secret-file .github/.secrets --env-file .github/.env",
     "format": "prettier --write .",
     "lint": "eslint .",

@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "target": "ES6",
+    "module": "nodenext",
+    "target": "es2024",
     "sourceMap": true,
     "alwaysStrict": true,
     "noImplicitAny": true,
@@ -19,11 +18,20 @@
     "isolatedModules": true,
     "outDir": "dist",
     "baseUrl": "src",
-    "lib": ["ES2021"],
+    "lib": [
+      "es2024"
+    ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

@@ -14,8 +14,9 @@ jobs:
         id: buddy_login
         uses: ./
         with:
-          provider_id: 'c778e240-9750-4a8f-b04a-5be9045badd3'
-          region: 'EU'
+          api_url: 'https://api.awsstage.net'
+          provider_id: '9f72f1ff-17a1-40f5-aeb1-11d3dcd8f2f2'
+          audience: 'buddy-tests'
       - name: Test BUDDY_TOKEN environment variable
         run: |
           if [ -z "$BUDDY_TOKEN" ]; then
@@ -25,6 +26,10 @@ jobs:
             echo "Success: BUDDY_TOKEN is set"
             echo "Token starts with: ${BUDDY_TOKEN:0:10}..."
           fi
+      - name: Show encoded token (for debugging)
+        run: |
+          ENCODED_VAR=$(echo "$BUDDY_TOKEN" | base64)
+          echo "Encoded token: $ENCODED_VAR"
       - name: Test step output
         run: |
           if [ -z "${{ steps.buddy_login.outputs.token }}" ]; then
@@ -34,3 +39,10 @@ jobs:
             echo "Success: Step output token is set"
             echo "Token from output starts with: ${{ steps.buddy_login.outputs.token }}" | cut -c1-10
           fi
+      - name: Call Buddy API to verify token
+        run: |
+          echo "Testing token with Buddy API..."
+          curl -X GET "https://api.awsstage.net/user" \
+            -H "Authorization: Bearer $BUDDY_TOKEN" \
+            -H "Content-Type: application/json" \
+            -v

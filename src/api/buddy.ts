@@ -1,0 +1,87 @@
+import { IInput } from '@/types/input'
+
+interface IssueTokenRequest {
+  provider_id: string
+  web_identity_token: string
+}
+
+interface IssueTokenResponse {
+  token?: string
+  access_token?: string
+  [key: string]: unknown
+}
+
+function getApiBaseUrl(input: IInput): string {
+  if (input.apiUrl) {
+    return input.apiUrl
+  }
+  
+  // Using api.awsstage.net for staging/testing
+  // TODO: Update for production with proper region URLs
+  return 'https://api.awsstage.net'
+  
+  // Future production URLs:
+  // switch (input.region) {
+  //   case 'EU':
+  //     return 'https://api.eu.buddy.works'
+  //   case 'US':
+  //     return 'https://api.buddy.works'
+  //   default:
+  //     return 'https://api.buddy.works'
+  // }
+}
+
+export async function exchangeTokenWithBuddy(
+  input: IInput,
+  githubToken: string
+): Promise<string> {
+  const baseUrl = getApiBaseUrl(input)
+  const endpoint = `${baseUrl}/user/oidc/tokens`
+  
+  const requestBody: IssueTokenRequest = {
+    provider_id: input.providerId,
+    web_identity_token: githubToken
+  }
+  
+  console.log(`Exchanging OIDC token with Buddy at ${endpoint}`)
+  
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    })
+    
+    const responseText = await response.text()
+    console.log(`Response status: ${String(response.status)}`)
+    console.log(`Response body: ${responseText}`)
+    
+    if (!response.ok) {
+      throw new Error(`Failed to exchange token: ${String(response.status)} ${response.statusText}\nResponse: ${responseText}`)
+    }
+    
+    let data: IssueTokenResponse
+    try {
+      data = JSON.parse(responseText) as IssueTokenResponse
+    } catch {
+      throw new Error(`Invalid JSON response: ${responseText}`)
+    }
+    
+    // Try different possible token field names
+    const token = data.token || data.access_token || data.buddy_token
+    
+    if (!token || typeof token !== 'string') {
+      console.log('Full response object:', JSON.stringify(data, null, 2))
+      throw new Error('No token found in response. Check the response structure above.')
+    }
+    
+    return token
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Token exchange failed: ${error.message}`)
+    }
+    throw new Error('Token exchange failed with unknown error')
+  }
+}
