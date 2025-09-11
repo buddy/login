@@ -25,7 +25,6 @@ jobs:
             exit 1
           else
             echo "Success: BUDDY_TOKEN is set"
-            echo "Token length: ${#BUDDY_TOKEN}"
           fi
       - name: Test step output
         run: |
