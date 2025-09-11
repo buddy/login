@@ -1,5 +1,6 @@
-name: 'Buddy Login'
-description: 'Authenticate with Buddy CI/CD platform using GitHub OIDC'
+name: 'Buddy OIDC Login'
+description: 'Authenticate with Buddy CI/CD platform using GitHub OIDC - no stored secrets required'
+author: 'Cyprian Zdebski'
 runs:
   using: 'node20'
   main: 'dist/index.js'
