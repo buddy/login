@@ -1,4 +1,5 @@
 import { IInput } from '@/types/input'
+import { setSecret } from '@actions/core'
 
 interface IssueTokenRequest {
   provider_id: string
@@ -39,34 +40,38 @@ async function fetchWithRetry(
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const response = await fetch(url, options)
-      
+
       // Don't retry on client errors (4xx)
       if (response.status >= 400 && response.status < 500) {
         return response
       }
-      
+
       // Retry on server errors (5xx) or network errors
       if (response.ok || attempt === maxRetries) {
         return response
       }
-      
-      lastError = new Error(`HTTP ${String(response.status)}: ${response.statusText}`)
+
+      lastError = new Error(
+        `HTTP ${String(response.status)}: ${response.statusText}`,
+      )
     } catch (error) {
       lastError = error instanceof Error ? error : new Error('Network error')
-      
+
       if (attempt === maxRetries) {
         throw lastError
       }
     }
-    
+
     // Wait before retrying with exponential backoff
     const delay = retryDelay * Math.pow(2, attempt - 1)
     if (debug) {
-      console.log(`[DEBUG] Retrying request (attempt ${String(attempt)}/${String(maxRetries)}) after ${String(delay)}ms...`)
+      console.log(
+        `[DEBUG] Retrying request (attempt ${String(attempt)}/${String(maxRetries)}) after ${String(delay)}ms...`,
+      )
     }
-    await new Promise(resolve => setTimeout(resolve, delay))
+    await new Promise((resolve) => setTimeout(resolve, delay))
   }
-  
+
   throw lastError || new Error('Failed after retries')
 }
 
@@ -113,7 +118,8 @@ export async function exchangeTokenWithBuddy(
     )
 
     const responseText = await response.text()
-    
+    setSecret(responseText)
+
     if (input.debug) {
       console.log(`[DEBUG] Response status: ${String(response.status)}`)
       console.log(`[DEBUG] Response body: ${responseText}`)
@@ -121,7 +127,7 @@ export async function exchangeTokenWithBuddy(
 
     if (!response.ok) {
       let errorMessage = `Failed to exchange OIDC token with Buddy API`
-      
+
       switch (response.status) {
         case 400:
           errorMessage = `Invalid request: Check provider_id format and ensure it's registered in Buddy`
@@ -141,7 +147,7 @@ export async function exchangeTokenWithBuddy(
           errorMessage = `Buddy API service error: Please try again later`
           break
       }
-      
+
       throw new Error(
         `${errorMessage}\nStatus: ${String(response.status)} ${response.statusText}\nResponse: ${responseText}`,
       )
@@ -152,11 +158,6 @@ export async function exchangeTokenWithBuddy(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
     if (uuidPattern.test(responseText.trim())) {
-      // Response is the token directly as plain text
-      if (input.debug) {
-        const token = responseText.trim()
-        console.log(`[DEBUG] Token received as plain UUID (first 8 chars): ${token.substring(0, 8)}...`)
-      }
       return responseText.trim()
     }
 
@@ -177,15 +178,20 @@ export async function exchangeTokenWithBuddy(
 
     if (!token || typeof token !== 'string') {
       if (input.debug) {
-        console.log('[DEBUG] Full response object:', JSON.stringify(data, null, 2))
+        console.log(
+          '[DEBUG] Full response object:',
+          JSON.stringify(data, null, 2),
+        )
       }
       throw new Error(
         'No token found in response. Check the response structure in debug mode.',
       )
     }
-    
+
     if (input.debug) {
-      console.log(`[DEBUG] Token received (first 8 chars): ${token.substring(0, 8)}...`)
+      console.log(
+        `[DEBUG] Token received (first 8 chars): ${token.substring(0, 8)}...`,
+      )
     }
 
     return token
