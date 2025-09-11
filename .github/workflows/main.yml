@@ -15,7 +15,7 @@ jobs:
         uses: ./
         with:
           api_url: 'https://api.awsstage.net'
-          provider_id: '9f72f1ff-17a1-40f5-aeb1-11d3dcd8f2f2'
+          provider_id: '3ece95dc-0985-432f-9593-d89d8e4b7081'
           audience: 'buddy-tests'
       - name: Test BUDDY_TOKEN environment variable
         run: |
