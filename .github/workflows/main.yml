@@ -14,6 +14,7 @@ jobs:
         id: buddy_login
         uses: ./
         with:
+          debug: true
           api_url: 'https://api.awsstage.net'
           provider_id: '3ece95dc-0985-432f-9593-d89d8e4b7081'
           audience: 'buddy-tests'
