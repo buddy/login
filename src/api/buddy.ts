@@ -16,19 +16,15 @@ function getApiBaseUrl(input: IInput): string {
     return input.apiUrl
   }
   
-  // Using api.awsstage.net for staging/testing
-  // TODO: Update for production with proper region URLs
-  return 'https://api.awsstage.net'
-  
-  // Future production URLs:
-  // switch (input.region) {
-  //   case 'EU':
-  //     return 'https://api.eu.buddy.works'
-  //   case 'US':
-  //     return 'https://api.buddy.works'
-  //   default:
-  //     return 'https://api.buddy.works'
-  // }
+  // Production region URLs
+  switch (input.region) {
+    case 'EU':
+      return 'https://api.eu.buddy.works'
+    case 'US':
+      return 'https://api.buddy.works'
+    default:
+      return 'https://api.buddy.works'
+  }
 }
 
 export async function exchangeTokenWithBuddy(
