@@ -1,8 +1,8 @@
 {
   "name": "login",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "GitHub Action for authenticating with Buddy CI/CD using OIDC",
+  "main": "dist/index.js",
   "scripts": {
     "build": "pnpm lint && esbuild src/index.ts --bundle --platform=node --target=node24 --minify --outdir=./dist",
     "start": "act --secret-file .github/.secrets --env-file .github/.env",
@@ -11,9 +11,17 @@
     "lint:types": "tsc --skipLibCheck --noEmit",
     "test": "pnpm lint && pnpm lint:types && pnpm build && pnpm start"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["github-action", "buddy", "oidc", "authentication", "ci-cd"],
+  "author": "Cyprian Zdebski <cyprian.zdebski@buddy.works>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/buddy/login.git"
+  },
+  "bugs": {
+    "url": "https://github.com/buddy/login/issues"
+  },
+  "homepage": "https://github.com/buddy/login#readme",
   "packageManager": "pnpm@10.11.0",
   "dependencies": {
     "@actions/core": "1.11.1"

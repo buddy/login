@@ -24,12 +24,8 @@ jobs:
             exit 1
           else
             echo "Success: BUDDY_TOKEN is set"
-            echo "Token starts with: ${BUDDY_TOKEN:0:10}..."
+            echo "Token length: ${#BUDDY_TOKEN}"
           fi
-      - name: Show encoded token (for debugging)
-        run: |
-          ENCODED_VAR=$(echo "$BUDDY_TOKEN" | base64)
-          echo "Encoded token: $ENCODED_VAR"
       - name: Test step output
         run: |
           if [ -z "${{ steps.buddy_login.outputs.token }}" ]; then
@@ -37,7 +33,6 @@ jobs:
             exit 1
           else
             echo "Success: Step output token is set"
-            echo "Token from output starts with: ${{ steps.buddy_login.outputs.token }}" | cut -c1-10
           fi
       - name: Call Buddy API to verify token
         run: |

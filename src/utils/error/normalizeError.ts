@@ -1,3 +1,8 @@
+/**
+ * Normalizes various error types to a string or Error object
+ * @param error - The error to normalize (can be any type)
+ * @returns A string error message or Error object
+ */
 export function normalizeError(error: unknown): string | Error {
   if (error instanceof Error) {
     return error
