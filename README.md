@@ -64,4 +64,4 @@ jobs:
 
 ## License
 
-Apache 2.0 - See [LICENSE.md](LICENSE.md) for details.
+MIT - See [LICENSE.md](LICENSE.md) for details.

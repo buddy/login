@@ -19,7 +19,7 @@
     "ci-cd"
   ],
   "author": "Cyprian Zdebski <cyprian.zdebski@buddy.works>",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/buddy/login.git"
