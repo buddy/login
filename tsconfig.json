@@ -18,20 +18,11 @@
     "isolatedModules": true,
     "outDir": "dist",
     "baseUrl": "src",
-    "lib": [
-      "es2024"
-    ],
+    "lib": ["es2024"],
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
