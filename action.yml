@@ -2,7 +2,7 @@ name: 'Buddy OIDC Login'
 description: 'Authenticate with Buddy CI/CD platform using GitHub OIDC - no stored secrets required'
 author: 'Cyprian Zdebski'
 runs:
-  using: 'node20'
+  using: 'node24'
   main: 'dist/index.js'
 inputs:
   region:
