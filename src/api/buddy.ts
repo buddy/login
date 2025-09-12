@@ -1,6 +1,8 @@
-import { IInput } from '@/types/input'
+import { IInputs, IInputsOIDC } from '@/types/inputs'
 import { logger } from '@/utils/action/logger'
 import { setSecret } from '@actions/core'
+import { API_URL } from '@/const/api_url'
+import { REGIONS } from '@/const/region'
 
 interface IssueTokenRequest {
   provider_id: string
@@ -13,19 +15,17 @@ interface IssueTokenResponse {
   [key: string]: unknown
 }
 
-function getApiBaseUrl(input: IInput): string {
-  if (input.apiUrl) {
-    return input.apiUrl
+function getApiBaseUrl(input: IInputs): string {
+  if ('api_url' in input && input.api_url) {
+    return input.api_url
   }
 
-  switch (input.region) {
-    case 'EU':
-      return 'https://api.eu.buddy.works'
-    case 'US':
-      return 'https://api.buddy.works'
-    default:
-      return 'https://api.buddy.works'
+  if ('region' in input && input.region) {
+    return input.region === REGIONS.EU ? API_URL.EU : API_URL.US
   }
+
+  // Default fallback
+  return API_URL.US
 }
 
 async function fetchWithRetry(
@@ -101,14 +101,14 @@ async function fetchWithRetry(
  * @throws Error if the token exchange fails or response is invalid
  */
 export async function exchangeTokenWithBuddy(
-  inputs: IInput,
+  inputs: IInputsOIDC,
   jwt: string,
 ): Promise<string> {
   const baseUrl = getApiBaseUrl(inputs)
   const endpoint = `${baseUrl}/user/oidc/tokens`
 
   const requestBody: IssueTokenRequest = {
-    provider_id: inputs.providerId,
+    provider_id: inputs.provider_id,
     web_identity_token: jwt,
   }
 
@@ -177,9 +177,9 @@ export async function exchangeTokenWithBuddy(
       throw new Error(`Invalid response format: Not a valid token or JSON`)
     }
 
-    const token = data.token || data.access_token || data.buddy_token
+    const api_key = data.token || data.access_token || data.buddy_token
 
-    if (!token || typeof token !== 'string') {
+    if (!api_key || typeof api_key !== 'string') {
       logger.debug('Response was valid JSON but no token field found')
       throw new Error(
         'No token found in response. Expected fields: token, access_token, or buddy_token',
@@ -188,7 +188,7 @@ export async function exchangeTokenWithBuddy(
 
     logger.debug(`Token successfully extracted from JSON response`)
 
-    return token
+    return api_key
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`Token exchange failed: ${error.message}`)

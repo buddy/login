@@ -1,1 +1,4 @@
-export const REGIONS = ['EU', 'US'] as const
+export enum REGIONS {
+  EU = 'EU',
+  US = 'US',
+}

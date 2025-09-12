@@ -1,5 +1,5 @@
 import { getInput } from '@actions/core'
-import { IInput } from '@/types/input'
+import { IInputs } from '@/types/inputs'
 import { REGIONS } from '@/const/region'
 import { isActionDebug } from '@/utils/action/isActionDebug'
 import { logger } from '@/utils/action/logger'
@@ -9,35 +9,48 @@ import { logger } from '@/utils/action/logger'
  * @returns Validated input configuration
  * @throws Error if any input is invalid
  */
-export function getInputs(): IInput {
-  const providerId = getInput('provider_id', { required: true })
+export function getInputs(): IInputs {
+  const api_key = getInput('api_key') || undefined
+  const provider_id = getInput('provider_id') || undefined
   const audience = getInput('audience') || undefined
-  const apiUrl = getInput('api_url') || undefined
+  const api_url = getInput('api_url') || undefined
+  const region = getInput('region') || undefined
   const debug = isActionDebug()
 
-  if (!isProviderIdValid(providerId)) {
-    throw new Error('Invalid provider ID format. Must be a valid UUID v4.')
-  }
-
+  // Validate audience if provided
   if (!isAudienceValid(audience)) {
     throw new Error(
       'Invalid audience input. Must be a valid string or undefined.',
     )
   }
 
-  if (apiUrl) {
-    if (!isApiUrlValid(apiUrl)) {
-      throw new Error('Invalid API URL format. Must be a valid HTTPS URL.')
+  // Determine authentication method
+  // Prioritize API key authentication
+  if (api_key) {
+    if (!isApiKeyValid(api_key)) {
+      throw new Error('Invalid API key format. Must be a valid UUID v4.')
     }
 
-    return {
-      apiUrl,
-      providerId,
-      audience,
-      debug,
+    // API key auth also needs region or api_url
+    if (api_url) {
+      if (!isApiUrlValid(api_url)) {
+        throw new Error('Invalid API URL format. Must be a valid HTTPS URL.')
+      }
+
+      return {
+        api_key,
+        api_url,
+        audience,
+        debug,
+      }
     }
-  } else {
-    const region = getInput('region', { required: true })
+
+    // Fall back to region for API key auth
+    if (!region) {
+      throw new Error(
+        'Either api_url or region must be provided when using API key authentication.',
+      )
+    }
 
     if (!isRegionValid(region)) {
       throw new Error(
@@ -46,16 +59,61 @@ export function getInputs(): IInput {
     }
 
     return {
+      api_key,
       region,
-      providerId,
       audience,
       debug,
     }
   }
+
+  // Fall back to OIDC authentication
+  if (!provider_id) {
+    throw new Error(
+      'Either api_key or provider_id must be provided for authentication.',
+    )
+  }
+
+  if (!isProviderIdValid(provider_id)) {
+    throw new Error('Invalid provider ID format. Must be a valid UUID v4.')
+  }
+
+  // Prioritize api_url over region for OIDC
+  if (api_url) {
+    if (!isApiUrlValid(api_url)) {
+      throw new Error('Invalid API URL format. Must be a valid HTTPS URL.')
+    }
+
+    return {
+      api_url,
+      provider_id,
+      audience,
+      debug,
+    }
+  }
+
+  // Fall back to region for OIDC
+  if (!region) {
+    throw new Error(
+      'Either api_url or region must be provided when using OIDC authentication (provider_id).',
+    )
+  }
+
+  if (!isRegionValid(region)) {
+    throw new Error(
+      `Invalid region input: ${region}. Must be one of ${Object.values(REGIONS).join(', ')}`,
+    )
+  }
+
+  return {
+    region,
+    provider_id,
+    audience,
+    debug,
+  }
 }
 
-function isRegionValid(region: string): region is (typeof REGIONS)[number] {
-  return REGIONS.includes(region as (typeof REGIONS)[number])
+function isRegionValid(region: string): region is REGIONS {
+  return Object.values(REGIONS).includes(region as REGIONS)
 }
 
 function isProviderIdValid(
@@ -74,6 +132,25 @@ function isProviderIdValid(
   ) {
     logger.warn(
       'Warning: Provider ID contains mixed case. Consider using lowercase UUID format.',
+    )
+  }
+
+  return true
+}
+
+function isApiKeyValid(
+  apiKey: string,
+): apiKey is `${string}-${string}-${string}-${string}-${string}` {
+  const uuidV4Pattern =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+  if (!uuidV4Pattern.test(apiKey)) {
+    return false
+  }
+
+  if (apiKey !== apiKey.toLowerCase() && apiKey !== apiKey.toUpperCase()) {
+    logger.warn(
+      'Warning: API key contains mixed case. Consider using lowercase UUID format.',
     )
   }
 
