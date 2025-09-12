@@ -30,5 +30,5 @@ outputs:
   api_endpoint:
     description: 'The URL to Buddy API endpoint. It is also exported as BUDDY_API_ENDPOINT variable.'
 branding:
-  icon: 'circle'
+  icon: 'log-in'
   color: 'blue'
