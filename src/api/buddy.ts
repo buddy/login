@@ -38,7 +38,26 @@ async function fetchWithRetry(
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      logger.debug(`[HTTP Request] ${options.method || 'GET'} ${url}`)
+      logger.debug(
+        `[HTTP Request Headers] ${JSON.stringify(options.headers || {})}`,
+      )
+
+      if (options.body) {
+        logger.debug(`[HTTP Request Body] <hidden - contains sensitive data>`)
+      }
+
+      const startTime = Date.now()
       const response = await fetch(url, options)
+      const duration = Date.now() - startTime
+
+      logger.debug(
+        `[HTTP Response] Status: ${String(response.status)} ${response.statusText} (${String(duration)}ms)`,
+      )
+      logger.debug(
+        `[HTTP Response Headers] ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`,
+      )
+      logger.debug(`[HTTP Response URL] ${response.url}`)
 
       if (response.status >= 400 && response.status < 500) {
         return response
@@ -51,10 +70,15 @@ async function fetchWithRetry(
       lastError = new Error(
         `HTTP ${String(response.status)}: ${response.statusText}`,
       )
+      logger.debug(
+        `[HTTP Error] Server error, will retry: ${lastError.message}`,
+      )
     } catch (error) {
       lastError = error instanceof Error ? error : new Error('Network error')
+      logger.debug(`[HTTP Error] Network/fetch error: ${lastError.message}`)
 
       if (attempt === maxRetries) {
+        logger.debug(`[HTTP Error] Max retries reached, failing`)
         throw lastError
       }
     }
@@ -89,9 +113,6 @@ export async function exchangeTokenWithBuddy(
   }
 
   logger.debug(`Exchanging OIDC token with Buddy`)
-  logger.debug(`Endpoint: ${endpoint}`)
-  logger.debug(`Provider ID: ${inputs.providerId}`)
-  logger.debug(`Audience: ${inputs.audience || 'default'}`)
 
   try {
     const response = await fetchWithRetry(
