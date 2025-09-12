@@ -16,8 +16,8 @@ jobs:
         with:
           debug: true
           api_url: 'https://api.awsstage.net'
-          provider_id: '3ece95dc-0985-432f-9593-d89d8e4b7081'
-          audience: 'buddy-tests'
+          provider_id: '65cc75b7-f3c0-46c8-937f-61432d90fb71'
+          audience: 'buddy'
       - name: Test BUDDY_TOKEN environment variable
         run: |
           if [ -z "$BUDDY_TOKEN" ]; then
@@ -39,5 +39,4 @@ jobs:
           echo "Testing token with Buddy API..."
           curl -X GET "https://api.awsstage.net/user" \
             -H "Authorization: Bearer $BUDDY_TOKEN" \
-            -H "Content-Type: application/json" \
-            -v
+            -H "Content-Type: application/json"
