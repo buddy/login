@@ -13,7 +13,6 @@ import { REGIONS } from '@/const/region'
 export async function login(): Promise<IOutputs> {
   const inputs = getInputs()
 
-  // Determine API endpoint based on inputs (same for both auth methods)
   let api_endpoint: string
   if ('api_url' in inputs && inputs.api_url) {
     api_endpoint = inputs.api_url
@@ -23,9 +22,7 @@ export async function login(): Promise<IOutputs> {
     api_endpoint = API_URL.US
   }
 
-  // Handle API key authentication
   if ('api_key' in inputs) {
-    // For API key auth, we just return the provided key
     return {
       api_key: inputs.api_key,
       api_endpoint,
