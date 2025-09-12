@@ -1,4 +1,5 @@
 import { IInput } from '@/types/input'
+import { logger } from '@/utils/action/logger'
 import { setSecret } from '@actions/core'
 
 interface IssueTokenRequest {
@@ -17,7 +18,6 @@ function getApiBaseUrl(input: IInput): string {
     return input.apiUrl
   }
 
-  // Production region URLs
   switch (input.region) {
     case 'EU':
       return 'https://api.eu.buddy.works'
@@ -33,7 +33,6 @@ async function fetchWithRetry(
   options: RequestInit,
   maxRetries = 3,
   retryDelay = 1000,
-  debug = false,
 ): Promise<Response> {
   let lastError: Error | undefined
 
@@ -41,12 +40,10 @@ async function fetchWithRetry(
     try {
       const response = await fetch(url, options)
 
-      // Don't retry on client errors (4xx)
       if (response.status >= 400 && response.status < 500) {
         return response
       }
 
-      // Retry on server errors (5xx) or network errors
       if (response.ok || attempt === maxRetries) {
         return response
       }
@@ -62,13 +59,10 @@ async function fetchWithRetry(
       }
     }
 
-    // Wait before retrying with exponential backoff
     const delay = retryDelay * Math.pow(2, attempt - 1)
-    if (debug) {
-      console.log(
-        `[DEBUG] Retrying request (attempt ${String(attempt)}/${String(maxRetries)}) after ${String(delay)}ms...`,
-      )
-    }
+    logger.debug(
+      `Retrying request (attempt ${String(attempt)}/${String(maxRetries)}) after ${String(delay)}ms...`,
+    )
     await new Promise((resolve) => setTimeout(resolve, delay))
   }
 
@@ -77,29 +71,27 @@ async function fetchWithRetry(
 
 /**
  * Exchanges a GitHub OIDC token for a Buddy access token
- * @param input - Input configuration including provider ID, region/API URL, and debug settings
- * @param githubToken - The JWT token obtained from GitHub's OIDC provider
+ * @param inputs - Input configuration including provider ID, region/API URL, and debug settings
+ * @param jwt - The JWT token obtained from GitHub's OIDC provider
  * @returns A Promise that resolves to the Buddy access token
  * @throws Error if the token exchange fails or response is invalid
  */
 export async function exchangeTokenWithBuddy(
-  input: IInput,
-  githubToken: string,
+  inputs: IInput,
+  jwt: string,
 ): Promise<string> {
-  const baseUrl = getApiBaseUrl(input)
+  const baseUrl = getApiBaseUrl(inputs)
   const endpoint = `${baseUrl}/user/oidc/tokens`
 
   const requestBody: IssueTokenRequest = {
-    provider_id: input.providerId,
-    web_identity_token: githubToken,
+    provider_id: inputs.providerId,
+    web_identity_token: jwt,
   }
 
-  if (input.debug) {
-    console.log(`[DEBUG] Exchanging OIDC token with Buddy`)
-    console.log(`[DEBUG] Endpoint: ${endpoint}`)
-    console.log(`[DEBUG] Provider ID: ${input.providerId}`)
-    console.log(`[DEBUG] Audience: ${input.audience || 'default'}`)
-  }
+  logger.debug(`Exchanging OIDC token with Buddy`)
+  logger.debug(`Endpoint: ${endpoint}`)
+  logger.debug(`Provider ID: ${inputs.providerId}`)
+  logger.debug(`Audience: ${inputs.audience || 'default'}`)
 
   try {
     const response = await fetchWithRetry(
@@ -113,16 +105,11 @@ export async function exchangeTokenWithBuddy(
       },
       3,
       1000,
-      input.debug,
     )
 
     const responseText = await response.text()
     setSecret(responseText)
-
-    if (input.debug) {
-      console.log(`[DEBUG] Response status: ${String(response.status)}`)
-      // Never log response details that could reveal token information
-    }
+    logger.debug(`Response status: ${String(response.status)}`)
 
     if (!response.ok) {
       let errorMessage = `Failed to exchange OIDC token with Buddy API`
@@ -152,7 +139,6 @@ export async function exchangeTokenWithBuddy(
       )
     }
 
-    // Check if response is plain text token (UUID format) or JSON
     const uuidPattern =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -160,34 +146,26 @@ export async function exchangeTokenWithBuddy(
       return responseText.trim()
     }
 
-    // Try to parse as JSON if not a plain UUID
     let data: IssueTokenResponse
     try {
       data = JSON.parse(responseText) as IssueTokenResponse
     } catch {
-      // If not valid JSON and not UUID, assume it's the token as plain text
       if (responseText.trim()) {
         return responseText.trim()
       }
       throw new Error(`Invalid response format: Not a valid token or JSON`)
     }
 
-    // Try different possible token field names in JSON response
     const token = data.token || data.access_token || data.buddy_token
 
     if (!token || typeof token !== 'string') {
-      if (input.debug) {
-        // Never log the actual response as it might contain sensitive data
-        console.log('[DEBUG] Response was valid JSON but no token field found')
-      }
+      logger.debug('Response was valid JSON but no token field found')
       throw new Error(
         'No token found in response. Expected fields: token, access_token, or buddy_token',
       )
     }
 
-    if (input.debug) {
-      console.log(`[DEBUG] Token successfully extracted from JSON response`)
-    }
+    logger.debug(`Token successfully extracted from JSON response`)
 
     return token
   } catch (error) {

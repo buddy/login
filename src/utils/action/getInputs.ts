@@ -1,6 +1,8 @@
 import { getInput } from '@actions/core'
 import { IInput } from '@/types/input'
 import { REGIONS } from '@/const/region'
+import { isActionDebug } from '@/utils/action/isActionDebug'
+import { logger } from '@/utils/action/logger'
 
 /**
  * Retrieves and validates all action inputs
@@ -11,8 +13,7 @@ export function getInputs(): IInput {
   const providerId = getInput('provider_id', { required: true })
   const audience = getInput('audience') || undefined
   const apiUrl = getInput('api_url') || undefined
-  const debugInput = getInput('debug')
-  const debug = debugInput ? debugInput.toLowerCase() === 'true' : false
+  const debug = isActionDebug()
 
   if (!isProviderIdValid(providerId)) {
     throw new Error('Invalid provider ID format. Must be a valid UUID v4.')
@@ -60,9 +61,6 @@ function isRegionValid(region: string): region is (typeof REGIONS)[number] {
 function isProviderIdValid(
   providerId: string,
 ): providerId is `${string}-${string}-${string}-${string}-${string}` {
-  // Strict UUID v4 validation
-  // Format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-  // where y is one of [8, 9, a, b]
   const uuidV4Pattern =
     /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
@@ -70,12 +68,11 @@ function isProviderIdValid(
     return false
   }
 
-  // Additional check: ensure it's lowercase (common UUID format)
   if (
     providerId !== providerId.toLowerCase() &&
     providerId !== providerId.toUpperCase()
   ) {
-    console.warn(
+    logger.warn(
       'Warning: Provider ID contains mixed case. Consider using lowercase UUID format.',
     )
   }
@@ -86,7 +83,6 @@ function isProviderIdValid(
 function isAudienceValid(audience: string | undefined): boolean {
   if (audience === undefined) return true
 
-  // Check length constraints
   if (audience.length === 0) {
     throw new Error('Audience cannot be an empty string')
   }
@@ -95,8 +91,6 @@ function isAudienceValid(audience: string | undefined): boolean {
     throw new Error('Audience must be less than 256 characters')
   }
 
-  // Allow common URI characters and identifiers
-  // Based on RFC 3986 unreserved characters plus some common delimiters
   const validPattern = /^[a-zA-Z0-9-._~:/?#@!$&'()*+,;=]+$/
 
   if (!validPattern.test(audience)) {

@@ -4,7 +4,7 @@ import { normalizeError } from '@/utils/error/normalizeError'
 
 login()
   .then(({ buddyToken }) => {
-    setSecret(buddyToken) // Set the token value as secret to mask it in logs
+    setSecret(buddyToken)
     exportVariable('BUDDY_TOKEN', buddyToken)
     setOutput('token', buddyToken)
     process.exit(0)
