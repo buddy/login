@@ -1,0 +1,42 @@
+on: [push, workflow_dispatch]
+
+jobs:
+  test_buddy_login_v1:
+    runs-on: ubuntu-latest
+    name: Test Buddy Login Action v1
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Login to Buddy
+        id: buddy_login
+        uses: buddy/login@v1
+        with:
+          debug: true
+          api_url: 'https://api.awsstage.net'
+          provider_id: '65cc75b7-f3c0-46c8-937f-61432d90fb71'
+          audience: 'buddy'
+      - name: Test BUDDY_TOKEN environment variable
+        run: |
+          if [ -z "$BUDDY_TOKEN" ]; then
+            echo "Error: BUDDY_TOKEN is not set"
+            exit 1
+          else
+            echo "Success: BUDDY_TOKEN is set"
+          fi
+      - name: Test step output
+        run: |
+          if [ -z "${{ steps.buddy_login.outputs.token }}" ]; then
+            echo "Error: Step output token is not set"
+            exit 1
+          else
+            echo "Success: Step output token is set"
+          fi
+      - name: Call Buddy API to verify token
+        run: |
+          echo "Testing token with Buddy API..."
+          curl -X GET "https://api.awsstage.net/user" \
+            -H "Authorization: Bearer $BUDDY_TOKEN" \
+            -H "Content-Type: application/json"
