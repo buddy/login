@@ -1,6 +1,6 @@
 {
   "name": "login",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "GitHub Action for authenticating with Buddy CI/CD using OIDC",
   "main": "dist/index.js",
   "scripts": {
