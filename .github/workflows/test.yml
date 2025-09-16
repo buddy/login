@@ -3,10 +3,14 @@ on: [push, workflow_dispatch]
 jobs:
   test_buddy_login_oidc:
     runs-on: ubuntu-latest
-    name: Test Buddy Login Action - OIDC (${{ matrix.ref == './' && 'local' || 'v1' }})
     strategy:
       matrix:
-        ref: ['./', 'buddy/login@v1']
+        include:
+          - ref: './'
+            name: 'local'
+          - ref: 'buddy/login@v1'
+            name: 'v1'
+    name: Test Buddy Login Action - OIDC - ${{ matrix.name }}
     permissions:
       contents: read
       id-token: write
@@ -60,10 +64,14 @@ jobs:
 
   test_buddy_login_pat:
     runs-on: ubuntu-latest
-    name: Test Buddy Login Action - PAT (${{ matrix.ref == './' && 'local' || 'v1' }})
     strategy:
       matrix:
-        ref: ['./', 'buddy/login@v1']
+        include:
+          - ref: './'
+            name: 'local'
+          - ref: 'buddy/login@v1'
+            name: 'v1'
+    name: Test Buddy Login Action - PAT - ${{ matrix.name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
