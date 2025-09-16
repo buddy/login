@@ -57,7 +57,6 @@ async function fetchWithRetry(
       logger.debug(
         `[HTTP Response Headers] ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`,
       )
-      logger.debug(`[HTTP Response Body] ${JSON.stringify(response.body)}`)
       logger.debug(`[HTTP Response URL] ${response.url}`)
 
       if (response.status >= 400 && response.status < 500) {
@@ -130,7 +129,13 @@ export async function exchangeTokenWithBuddy(
     )
 
     const responseText = await response.text()
-    setSecret(responseText)
+
+    // Only mark as secret if it's a successful response with a token
+    if (response.status === 200) {
+      setSecret(responseText)
+    }
+
+    logger.debug(`[HTTP Response Body] ${responseText || '<empty>'}`)
     logger.debug(`Response status: ${String(response.status)}`)
 
     if (!response.ok) {
