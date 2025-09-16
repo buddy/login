@@ -1,9 +1,12 @@
 on: [push, workflow_dispatch]
 
 jobs:
-  test_buddy_login_v1_oidc:
+  test_buddy_login_oidc:
     runs-on: ubuntu-latest
-    name: Test Buddy Login Action v1 - OIDC
+    name: Test Buddy Login Action - OIDC (${{ matrix.ref == './' && 'local' || 'v1' }})
+    strategy:
+      matrix:
+        ref: ['./', 'buddy/login@v1']
     permissions:
       contents: read
       id-token: write
@@ -12,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Login to Buddy (OIDC)
         id: buddy_login
-        uses: buddy/login@v1
+        uses: ${{ matrix.ref }}
         with:
           debug: true
           api_url: 'https://api.awsstage.net'
@@ -55,15 +58,18 @@ jobs:
             -H "Authorization: Bearer $BUDDY_TOKEN" \
             -H "Content-Type: application/json"
 
-  test_buddy_login_v1_pat:
+  test_buddy_login_pat:
     runs-on: ubuntu-latest
-    name: Test Buddy Login Action v1 - PAT
+    name: Test Buddy Login Action - PAT (${{ matrix.ref == './' && 'local' || 'v1' }})
+    strategy:
+      matrix:
+        ref: ['./', 'buddy/login@v1']
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Login to Buddy (PAT)
         id: buddy_login
-        uses: buddy/login@v1
+        uses: ${{ matrix.ref }}
         with:
           debug: true
           api_key: ${{ secrets.BUDDY_PAT }}
@@ -104,3 +110,77 @@ jobs:
           curl -X GET "$BUDDY_API_ENDPOINT/user" \
             -H "Authorization: Bearer $BUDDY_TOKEN" \
             -H "Content-Type: application/json"
+
+  test_buddy_login_error_scenarios:
+    runs-on: ubuntu-latest
+    name: Test Buddy Login Action - Error Scenarios
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test with wrong provider_id
+        id: wrong_provider
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: 'https://api.awsstage.net'
+          provider_id: 'non-existent-provider-id-12345'
+          audience: 'buddy'
+
+      - name: Check wrong provider_id error
+        if: steps.wrong_provider.outcome != 'failure'
+        run: |
+          echo "Error: Expected failure for wrong provider_id but got: ${{ steps.wrong_provider.outcome }}"
+          exit 1
+
+      - name: Test with wrong audience
+        id: wrong_audience
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: 'https://api.awsstage.net'
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'wrong-audience'
+
+      - name: Check wrong audience error
+        if: steps.wrong_audience.outcome != 'failure'
+        run: |
+          echo "Error: Expected failure for wrong audience but got: ${{ steps.wrong_audience.outcome }}"
+          exit 1
+
+      - name: Test with empty provider_id
+        id: empty_provider
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: 'https://api.awsstage.net'
+          provider_id: ''
+          audience: 'buddy'
+
+      - name: Check empty provider_id error
+        if: steps.empty_provider.outcome != 'failure'
+        run: |
+          echo "Error: Expected failure for empty provider_id but got: ${{ steps.empty_provider.outcome }}"
+          exit 1
+
+      - name: Test with malformed provider_id
+        id: malformed_provider
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: 'https://api.awsstage.net'
+          provider_id: 'not-a-uuid'
+          audience: 'buddy'
+
+      - name: Check malformed provider_id error
+        if: steps.malformed_provider.outcome != 'failure'
+        run: |
+          echo "Error: Expected failure for malformed provider_id but got: ${{ steps.malformed_provider.outcome }}"
+          exit 1
