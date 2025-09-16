@@ -44,7 +44,7 @@ async function fetchWithRetry(
       )
 
       if (options.body) {
-        logger.debug(`[HTTP Request Body]`, options.body)
+        logger.debug(`[HTTP Request Body] <hidden - contains sensitive data>`)
       }
 
       const startTime = Date.now()
@@ -129,7 +129,13 @@ export async function exchangeTokenWithBuddy(
     )
 
     const responseText = await response.text()
-    setSecret(responseText)
+
+    // Only mark as secret if it's a successful response with a token
+    if (response.status === 200) {
+      setSecret(responseText)
+    }
+
+    logger.debug(`[HTTP Response Body] ${responseText || '<empty>'}`)
     logger.debug(`Response status: ${String(response.status)}`)
 
     if (!response.ok) {

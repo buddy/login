@@ -1,0 +1,282 @@
+name: Test Buddy Login Action
+
+on: [push, workflow_dispatch]
+
+env:
+  TEST_API_URL: 'https://api.awsstage.net'
+
+jobs:
+  test-oidc:
+    name: Test OIDC Authentication
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Buddy (OIDC)
+        id: buddy_login
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
+
+      - name: Verify BUDDY_TOKEN is set
+        run: |
+          if [ -z "$BUDDY_TOKEN" ]; then
+            echo "Error: BUDDY_TOKEN is not set"
+            exit 1
+          fi
+          echo "Success: BUDDY_TOKEN is set"
+
+      - name: Verify BUDDY_API_ENDPOINT is set
+        run: |
+          if [ -z "$BUDDY_API_ENDPOINT" ]; then
+            echo "Error: BUDDY_API_ENDPOINT is not set"
+            exit 1
+          fi
+          echo "Success: BUDDY_API_ENDPOINT is set to $BUDDY_API_ENDPOINT"
+
+      - name: Verify step outputs
+        run: |
+          if [ -z "${{ steps.buddy_login.outputs.api_key }}" ]; then
+            echo "Error: Step output api_key is not set"
+            exit 1
+          fi
+          echo "Success: Step output api_key is set"
+
+          if [ -z "${{ steps.buddy_login.outputs.api_endpoint }}" ]; then
+            echo "Error: Step output api_endpoint is not set"
+            exit 1
+          fi
+          echo "Success: Step output api_endpoint is set"
+
+      - name: Test API with token
+        run: |
+          echo "Testing OIDC token with Buddy API..."
+          curl -X GET "$BUDDY_API_ENDPOINT/user" \
+            -H "Authorization: Bearer $BUDDY_TOKEN" \
+            -H "Content-Type: application/json"
+
+  test-pat:
+    name: Test PAT Authentication
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Buddy (PAT)
+        id: buddy_login
+        uses: ./
+        with:
+          debug: true
+          api_key: ${{ secrets.BUDDY_PAT }}
+          api_url: ${{ env.TEST_API_URL }}
+
+      - name: Verify BUDDY_TOKEN is set
+        run: |
+          if [ -z "$BUDDY_TOKEN" ]; then
+            echo "Error: BUDDY_TOKEN is not set"
+            exit 1
+          fi
+          echo "Success: BUDDY_TOKEN is set"
+
+      - name: Verify BUDDY_API_ENDPOINT is set
+        run: |
+          if [ -z "$BUDDY_API_ENDPOINT" ]; then
+            echo "Error: BUDDY_API_ENDPOINT is not set"
+            exit 1
+          fi
+          echo "Success: BUDDY_API_ENDPOINT is set to $BUDDY_API_ENDPOINT"
+
+      - name: Verify step outputs
+        run: |
+          if [ -z "${{ steps.buddy_login.outputs.api_key }}" ]; then
+            echo "Error: Step output api_key is not set"
+            exit 1
+          fi
+          echo "Success: Step output api_key is set"
+
+          if [ -z "${{ steps.buddy_login.outputs.api_endpoint }}" ]; then
+            echo "Error: Step output api_endpoint is not set"
+            exit 1
+          fi
+          echo "Success: Step output api_endpoint is set"
+
+      - name: Test API with token
+        run: |
+          echo "Testing PAT with Buddy API..."
+          curl -X GET "$BUDDY_API_ENDPOINT/user" \
+            -H "Authorization: Bearer $BUDDY_TOKEN" \
+            -H "Content-Type: application/json"
+
+  test-error-scenarios:
+    name: Test Error Scenarios
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Wrong provider_id tests
+      - name: OIDC - Non-existent provider_id
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          provider_id: 'non-existent-provider-id-12345'
+          audience: 'buddy'
+
+      - name: OIDC - Malformed provider_id (not UUID)
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          provider_id: 'not-a-uuid'
+          audience: 'buddy'
+
+      - name: OIDC - Empty provider_id
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          provider_id: ''
+          audience: 'buddy'
+
+      # Wrong audience tests
+      - name: OIDC - Wrong audience
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'wrong-audience'
+
+      - name: OIDC - Empty audience
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: ''
+
+      - name: OIDC - Very long audience
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'this-is-a-very-long-audience-string-that-might-cause-issues-this-is-a-very-long-audience-string-that-might-cause-issues-this-is-a-very-long-audience-string-that-might-cause-issues-this-is-a-very-long-audience-string-that-might-cause-issues'
+
+      # Mixed auth params tests
+      - name: Both api_key and provider_id provided
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          api_key: ${{ secrets.BUDDY_PAT }}
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
+
+      - name: PAT with audience parameter
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          api_key: ${{ secrets.BUDDY_PAT }}
+          audience: 'buddy'
+
+      # Wrong API key tests
+      - name: PAT - Invalid API key format
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          api_key: 'invalid-api-key-format'
+
+      - name: PAT - Empty API key
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          api_key: ''
+
+      # Missing required params tests
+      - name: No authentication params
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+
+      - name: OIDC - Missing audience (default should work)
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+
+      # Wrong API URL tests
+      - name: Invalid API URL format
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: 'not-a-valid-url'
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
+
+      - name: HTTP instead of HTTPS
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: 'http://api.awsstage.net'
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
+
+      - name: Wrong API endpoint
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: 'https://wrong.api.endpoint.com'
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
+
+      # Region tests
+      - name: Invalid region
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          region: 'invalid-region'
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
+
+      - name: Both api_url and region provided
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          region: 'US'
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
