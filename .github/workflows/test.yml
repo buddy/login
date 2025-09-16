@@ -1,8 +1,7 @@
 on: [push, workflow_dispatch]
 
 jobs:
-  test_buddy_login_oidc:
-    runs-on: ubuntu-latest
+  test_buddy_login:
     strategy:
       matrix:
         include:
@@ -10,118 +9,15 @@ jobs:
             name: 'local'
           - ref: 'buddy/login@v1'
             name: 'v1'
-    name: Test Buddy Login Action - OIDC - ${{ matrix.name }}
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Login to Buddy (OIDC)
-        id: buddy_login
-        uses: ${{ matrix.ref }}
-        with:
-          debug: true
-          api_url: 'https://api.awsstage.net'
-          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
-          audience: 'buddy'
-      - name: Test BUDDY_TOKEN environment variable
-        run: |
-          if [ -z "$BUDDY_TOKEN" ]; then
-            echo "Error: BUDDY_TOKEN is not set"
-            exit 1
-          else
-            echo "Success: BUDDY_TOKEN is set"
-          fi
-      - name: Test BUDDY_API_ENDPOINT environment variable
-        run: |
-          if [ -z "$BUDDY_API_ENDPOINT" ]; then
-            echo "Error: BUDDY_API_ENDPOINT is not set"
-            exit 1
-          else
-            echo "Success: BUDDY_API_ENDPOINT is set ($BUDDY_API_ENDPOINT)"
-          fi
-      - name: Test step outputs
-        run: |
-          if [ -z "${{ steps.buddy_login.outputs.api_key }}" ]; then
-            echo "Error: Step output api_key is not set"
-            exit 1
-          else
-            echo "Success: Step output api_key is set"
-          fi
-          if [ -z "${{ steps.buddy_login.outputs.api_endpoint }}" ]; then
-            echo "Error: Step output api_endpoint is not set"
-            exit 1
-          else
-            echo "Success: Step output api_endpoint is set"
-          fi
-      - name: Call Buddy API to verify token
-        run: |
-          echo "Testing OIDC token with Buddy API..."
-          curl -X GET "$BUDDY_API_ENDPOINT/user" \
-            -H "Authorization: Bearer $BUDDY_TOKEN" \
-            -H "Content-Type: application/json"
-
-  test_buddy_login_pat:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - ref: './'
-            name: 'local'
-          - ref: 'buddy/login@v1'
-            name: 'v1'
-    name: Test Buddy Login Action - PAT - ${{ matrix.name }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Login to Buddy (PAT)
-        id: buddy_login
-        uses: ${{ matrix.ref }}
-        with:
-          debug: true
-          api_key: ${{ secrets.BUDDY_PAT }}
-          api_url: 'https://api.awsstage.net'
-      - name: Test BUDDY_TOKEN environment variable
-        run: |
-          if [ -z "$BUDDY_TOKEN" ]; then
-            echo "Error: BUDDY_TOKEN is not set"
-            exit 1
-          else
-            echo "Success: BUDDY_TOKEN is set"
-          fi
-      - name: Test BUDDY_API_ENDPOINT environment variable
-        run: |
-          if [ -z "$BUDDY_API_ENDPOINT" ]; then
-            echo "Error: BUDDY_API_ENDPOINT is not set"
-            exit 1
-          else
-            echo "Success: BUDDY_API_ENDPOINT is set ($BUDDY_API_ENDPOINT)"
-          fi
-      - name: Test step outputs
-        run: |
-          if [ -z "${{ steps.buddy_login.outputs.api_key }}" ]; then
-            echo "Error: Step output api_key is not set"
-            exit 1
-          else
-            echo "Success: Step output api_key is set"
-          fi
-          if [ -z "${{ steps.buddy_login.outputs.api_endpoint }}" ]; then
-            echo "Error: Step output api_endpoint is not set"
-            exit 1
-          else
-            echo "Success: Step output api_endpoint is set"
-          fi
-      - name: Call Buddy API to verify token
-        run: |
-          echo "Testing PAT with Buddy API..."
-          curl -X GET "$BUDDY_API_ENDPOINT/user" \
-            -H "Authorization: Bearer $BUDDY_TOKEN" \
-            -H "Content-Type: application/json"
+    uses: ./.github/workflows/test-base.yml
+    with:
+      action_ref: ${{ matrix.ref }}
+      test_name: ${{ matrix.name }}
+    secrets: inherit
 
   test_buddy_login_error_scenarios:
+    name: Test Buddy Login Action - Error Scenarios (local only)
     runs-on: ubuntu-latest
-    name: Test Buddy Login Action - Error Scenarios
     permissions:
       contents: read
       id-token: write
