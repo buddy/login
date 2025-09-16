@@ -1,22 +1,118 @@
+name: Test Buddy Login Action
+
 on: [push, workflow_dispatch]
 
 jobs:
-  test_buddy_login:
-    strategy:
-      matrix:
-        include:
-          - ref: './'
-            name: 'local'
-          - ref: 'buddy/login@v1'
-            name: 'v1'
-    uses: ./.github/workflows/test-base.yml
-    with:
-      action_ref: ${{ matrix.ref }}
-      test_name: ${{ matrix.name }}
-    secrets: inherit
+  test-oidc:
+    name: Test OIDC Authentication
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-  test_buddy_login_error_scenarios:
-    name: Test Buddy Login Action - Error Scenarios (local only)
+      - name: Login to Buddy (OIDC)
+        id: buddy_login
+        uses: ./
+        with:
+          debug: true
+          api_url: 'https://api.awsstage.net'
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
+
+      - name: Verify BUDDY_TOKEN is set
+        run: |
+          if [ -z "$BUDDY_TOKEN" ]; then
+            echo "Error: BUDDY_TOKEN is not set"
+            exit 1
+          fi
+          echo "Success: BUDDY_TOKEN is set"
+
+      - name: Verify BUDDY_API_ENDPOINT is set
+        run: |
+          if [ -z "$BUDDY_API_ENDPOINT" ]; then
+            echo "Error: BUDDY_API_ENDPOINT is not set"
+            exit 1
+          fi
+          echo "Success: BUDDY_API_ENDPOINT is set to $BUDDY_API_ENDPOINT"
+
+      - name: Verify step outputs
+        run: |
+          if [ -z "${{ steps.buddy_login.outputs.api_key }}" ]; then
+            echo "Error: Step output api_key is not set"
+            exit 1
+          fi
+          echo "Success: Step output api_key is set"
+
+          if [ -z "${{ steps.buddy_login.outputs.api_endpoint }}" ]; then
+            echo "Error: Step output api_endpoint is not set"
+            exit 1
+          fi
+          echo "Success: Step output api_endpoint is set"
+
+      - name: Test API with token
+        run: |
+          echo "Testing OIDC token with Buddy API..."
+          curl -X GET "$BUDDY_API_ENDPOINT/user" \
+            -H "Authorization: Bearer $BUDDY_TOKEN" \
+            -H "Content-Type: application/json"
+
+  test-pat:
+    name: Test PAT Authentication
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Buddy (PAT)
+        id: buddy_login
+        uses: ./
+        with:
+          debug: true
+          api_key: ${{ secrets.BUDDY_PAT }}
+          api_url: 'https://api.awsstage.net'
+
+      - name: Verify BUDDY_TOKEN is set
+        run: |
+          if [ -z "$BUDDY_TOKEN" ]; then
+            echo "Error: BUDDY_TOKEN is not set"
+            exit 1
+          fi
+          echo "Success: BUDDY_TOKEN is set"
+
+      - name: Verify BUDDY_API_ENDPOINT is set
+        run: |
+          if [ -z "$BUDDY_API_ENDPOINT" ]; then
+            echo "Error: BUDDY_API_ENDPOINT is not set"
+            exit 1
+          fi
+          echo "Success: BUDDY_API_ENDPOINT is set to $BUDDY_API_ENDPOINT"
+
+      - name: Verify step outputs
+        run: |
+          if [ -z "${{ steps.buddy_login.outputs.api_key }}" ]; then
+            echo "Error: Step output api_key is not set"
+            exit 1
+          fi
+          echo "Success: Step output api_key is set"
+
+          if [ -z "${{ steps.buddy_login.outputs.api_endpoint }}" ]; then
+            echo "Error: Step output api_endpoint is not set"
+            exit 1
+          fi
+          echo "Success: Step output api_endpoint is set"
+
+      - name: Test API with token
+        run: |
+          echo "Testing PAT with Buddy API..."
+          curl -X GET "$BUDDY_API_ENDPOINT/user" \
+            -H "Authorization: Bearer $BUDDY_TOKEN" \
+            -H "Content-Type: application/json"
+
+  test-error-scenarios:
+    name: Test Error Scenarios
     runs-on: ubuntu-latest
     permissions:
       contents: read
