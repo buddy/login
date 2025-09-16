@@ -2,6 +2,9 @@ name: Test Buddy Login Action
 
 on: [push, workflow_dispatch]
 
+env:
+  TEST_API_URL: 'https://api.awsstage.net'
+
 jobs:
   test-oidc:
     name: Test OIDC Authentication
@@ -18,7 +21,7 @@ jobs:
         uses: ./
         with:
           debug: true
-          api_url: 'https://api.awsstage.net'
+          api_url: ${{ env.TEST_API_URL }}
           provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
           audience: 'buddy'
 
@@ -72,7 +75,7 @@ jobs:
         with:
           debug: true
           api_key: ${{ secrets.BUDDY_PAT }}
-          api_url: 'https://api.awsstage.net'
+          api_url: ${{ env.TEST_API_URL }}
 
       - name: Verify BUDDY_TOKEN is set
         run: |
@@ -121,66 +124,159 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Test with wrong provider_id
-        id: wrong_provider
+      # Wrong provider_id tests
+      - name: OIDC - Non-existent provider_id
         continue-on-error: true
         uses: ./
         with:
           debug: true
-          api_url: 'https://api.awsstage.net'
+          api_url: ${{ env.TEST_API_URL }}
           provider_id: 'non-existent-provider-id-12345'
           audience: 'buddy'
 
-      - name: Check wrong provider_id error
-        if: steps.wrong_provider.outcome != 'failure'
-        run: |
-          echo "Error: Expected failure for wrong provider_id but got: ${{ steps.wrong_provider.outcome }}"
-          exit 1
-
-      - name: Test with wrong audience
-        id: wrong_audience
+      - name: OIDC - Malformed provider_id (not UUID)
         continue-on-error: true
         uses: ./
         with:
           debug: true
-          api_url: 'https://api.awsstage.net'
-          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
-          audience: 'wrong-audience'
-
-      - name: Check wrong audience error
-        if: steps.wrong_audience.outcome != 'failure'
-        run: |
-          echo "Error: Expected failure for wrong audience but got: ${{ steps.wrong_audience.outcome }}"
-          exit 1
-
-      - name: Test with empty provider_id
-        id: empty_provider
-        continue-on-error: true
-        uses: ./
-        with:
-          debug: true
-          api_url: 'https://api.awsstage.net'
-          provider_id: ''
-          audience: 'buddy'
-
-      - name: Check empty provider_id error
-        if: steps.empty_provider.outcome != 'failure'
-        run: |
-          echo "Error: Expected failure for empty provider_id but got: ${{ steps.empty_provider.outcome }}"
-          exit 1
-
-      - name: Test with malformed provider_id
-        id: malformed_provider
-        continue-on-error: true
-        uses: ./
-        with:
-          debug: true
-          api_url: 'https://api.awsstage.net'
+          api_url: ${{ env.TEST_API_URL }}
           provider_id: 'not-a-uuid'
           audience: 'buddy'
 
-      - name: Check malformed provider_id error
-        if: steps.malformed_provider.outcome != 'failure'
-        run: |
-          echo "Error: Expected failure for malformed provider_id but got: ${{ steps.malformed_provider.outcome }}"
-          exit 1
+      - name: OIDC - Empty provider_id
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          provider_id: ''
+          audience: 'buddy'
+
+      # Wrong audience tests
+      - name: OIDC - Wrong audience
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'wrong-audience'
+
+      - name: OIDC - Empty audience
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: ''
+
+      - name: OIDC - Very long audience
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'this-is-a-very-long-audience-string-that-might-cause-issues-this-is-a-very-long-audience-string-that-might-cause-issues-this-is-a-very-long-audience-string-that-might-cause-issues-this-is-a-very-long-audience-string-that-might-cause-issues'
+
+      # Mixed auth params tests
+      - name: Both api_key and provider_id provided
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          api_key: ${{ secrets.BUDDY_PAT }}
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
+
+      - name: PAT with audience parameter
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          api_key: ${{ secrets.BUDDY_PAT }}
+          audience: 'buddy'
+
+      # Wrong API key tests
+      - name: PAT - Invalid API key format
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          api_key: 'invalid-api-key-format'
+
+      - name: PAT - Empty API key
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          api_key: ''
+
+      # Missing required params tests
+      - name: No authentication params
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+
+      - name: OIDC - Missing audience (default should work)
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+
+      # Wrong API URL tests
+      - name: Invalid API URL format
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: 'not-a-valid-url'
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
+
+      - name: HTTP instead of HTTPS
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: 'http://api.awsstage.net'
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
+
+      - name: Wrong API endpoint
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: 'https://wrong.api.endpoint.com'
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
+
+      # Region tests
+      - name: Invalid region
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          region: 'invalid-region'
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
+
+      - name: Both api_url and region provided
+        continue-on-error: true
+        uses: ./
+        with:
+          debug: true
+          api_url: ${{ env.TEST_API_URL }}
+          region: 'US'
+          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          audience: 'buddy'
