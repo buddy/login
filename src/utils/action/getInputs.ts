@@ -2,7 +2,6 @@ import { getInput } from '@actions/core'
 import { IInputs } from '@/types/inputs'
 import { REGIONS } from '@/const/region'
 import { isActionDebug } from '@/utils/action/isActionDebug'
-import { logger } from '@/utils/action/logger'
 
 /**
  * Retrieves and validates all action inputs
@@ -28,7 +27,7 @@ export function getInputs(): IInputs {
   // Prioritize API key authentication
   if (api_key) {
     if (!isApiKeyValid(api_key)) {
-      throw new Error('Invalid API key format. Must be a valid UUID v4.')
+      throw new Error('Invalid API key: cannot be empty')
     }
 
     // API key auth also needs region or api_url
@@ -74,7 +73,7 @@ export function getInputs(): IInputs {
   }
 
   if (!isProviderIdValid(provider_id)) {
-    throw new Error('Invalid provider ID format. Must be a valid UUID v4.')
+    throw new Error('Invalid provider_id: cannot be empty')
   }
 
   // Prioritize api_url over region for OIDC
@@ -119,20 +118,15 @@ function isRegionValid(region: string): region is REGIONS {
 function isProviderIdValid(
   providerId: string,
 ): providerId is `${string}-${string}-${string}-${string}-${string}` {
-  const uuidV4Pattern =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-  if (!uuidV4Pattern.test(providerId)) {
+  // Just check it's not empty and has reasonable length
+  // Let the backend validate the actual format
+  if (!providerId || providerId.trim().length === 0) {
     return false
   }
 
-  if (
-    providerId !== providerId.toLowerCase() &&
-    providerId !== providerId.toUpperCase()
-  ) {
-    logger.warn(
-      'Warning: Provider ID contains mixed case. Consider using lowercase UUID format.',
-    )
+  // Reasonable max length check
+  if (providerId.length > 255) {
+    return false
   }
 
   return true
@@ -141,17 +135,15 @@ function isProviderIdValid(
 function isApiKeyValid(
   apiKey: string,
 ): apiKey is `${string}-${string}-${string}-${string}-${string}` {
-  const uuidV4Pattern =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-  if (!uuidV4Pattern.test(apiKey)) {
+  // Just check it's not empty and has reasonable length
+  // Let the backend validate the actual format
+  if (!apiKey || apiKey.trim().length === 0) {
     return false
   }
 
-  if (apiKey !== apiKey.toLowerCase() && apiKey !== apiKey.toUpperCase()) {
-    logger.warn(
-      'Warning: API key contains mixed case. Consider using lowercase UUID format.',
-    )
+  // Reasonable max length check
+  if (apiKey.length > 255) {
+    return false
   }
 
   return true
@@ -160,20 +152,15 @@ function isApiKeyValid(
 function isAudienceValid(audience: string | undefined): boolean {
   if (audience === undefined) return true
 
+  // Just check it's not empty if provided
+  // Let the backend validate the actual format and characters
   if (audience.length === 0) {
     throw new Error('Audience cannot be an empty string')
   }
 
-  if (audience.length > 255) {
-    throw new Error('Audience must be less than 256 characters')
-  }
-
-  const validPattern = /^[a-zA-Z0-9-._~:/?#@!$&'()*+,;=]+$/
-
-  if (!validPattern.test(audience)) {
-    throw new Error(
-      'Audience contains invalid characters. Only alphanumeric and URI-safe characters are allowed.',
-    )
+  // Reasonable max length check
+  if (audience.length > 1024) {
+    throw new Error('Audience is too long (max 1024 characters)')
   }
 
   return true
