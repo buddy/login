@@ -133,30 +133,32 @@ export async function exchangeTokenWithBuddy(
     logger.debug(`Response status: ${String(response.status)}`)
 
     if (!response.ok) {
-      let errorMessage = `Failed to exchange OIDC token with Buddy API`
+      let errorMessage = ''
 
-      switch (response.status) {
-        case 400:
-          errorMessage = `Invalid request: Check provider_id format and ensure it's registered in Buddy`
-          break
-        case 401:
-          errorMessage = `Authentication failed: GitHub OIDC token may be invalid or expired`
-          break
-        case 403:
-          errorMessage = `Authorization failed: Provider may not be configured correctly in Buddy`
-          break
-        case 404:
-          errorMessage = `Provider not found: Check that provider_id exists in your Buddy workspace`
-          break
-        case 500:
-        case 502:
-        case 503:
-          errorMessage = `Buddy API service error: Please try again later`
-          break
+      // Try to parse error response from backend
+      try {
+        const errorData = JSON.parse(responseText) as {
+          errors?: Array<{ message?: string }>
+          message?: string
+        }
+
+        // Extract error message from backend response
+        if (errorData.errors && errorData.errors[0]?.message) {
+          errorMessage = errorData.errors[0].message
+        } else if (errorData.message) {
+          errorMessage = errorData.message
+        }
+      } catch {
+        // Response is not valid JSON, use generic message
+      }
+
+      // If no backend message, use generic status-based message
+      if (!errorMessage) {
+        errorMessage = `Token exchange failed with status ${String(response.status)}`
       }
 
       throw new Error(
-        `${errorMessage}\nStatus: ${String(response.status)} ${response.statusText}`,
+        `${errorMessage} (HTTP ${String(response.status)} ${response.statusText})`,
       )
     }
 
