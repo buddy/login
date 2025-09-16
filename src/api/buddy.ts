@@ -44,7 +44,7 @@ async function fetchWithRetry(
       )
 
       if (options.body) {
-        logger.debug(`[HTTP Request Body] <hidden - contains sensitive data>`)
+        logger.debug(`[HTTP Request Body]`, options.body)
       }
 
       const startTime = Date.now()
