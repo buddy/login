@@ -9,7 +9,7 @@ import { isActionDebug } from '@/utils/action/isActionDebug'
  * @throws Error if any input is invalid
  */
 export function getInputs(): IInputs {
-  const api_key = getInput('api_key') || undefined
+  const token = getInput('token') || undefined
   const provider_id = getInput('provider_id') || undefined
   const audience = getInput('audience') || undefined
   const api_url = getInput('api_url') || undefined
@@ -24,30 +24,30 @@ export function getInputs(): IInputs {
   }
 
   // Determine authentication method
-  // Prioritize API key authentication
-  if (api_key) {
-    if (!isApiKeyValid(api_key)) {
-      throw new Error('Invalid API key: cannot be empty')
+  // Prioritize token authentication
+  if (token) {
+    if (!isTokenValid(token)) {
+      throw new Error('Invalid token: cannot be empty')
     }
 
-    // API key auth also needs region or api_url
+    // Token auth also needs region or api_url
     if (api_url) {
       if (!isApiUrlValid(api_url)) {
         throw new Error('Invalid API URL format. Must be a valid HTTPS URL.')
       }
 
       return {
-        api_key,
+        token,
         api_url,
         audience,
         debug,
       }
     }
 
-    // Fall back to region for API key auth
+    // Fall back to region for token auth
     if (!region) {
       throw new Error(
-        'Either api_url or region must be provided when using API key authentication.',
+        'Either api_url or region must be provided when using token authentication.',
       )
     }
 
@@ -58,7 +58,7 @@ export function getInputs(): IInputs {
     }
 
     return {
-      api_key,
+      token,
       region,
       audience,
       debug,
@@ -68,7 +68,7 @@ export function getInputs(): IInputs {
   // Fall back to OIDC authentication
   if (!provider_id) {
     throw new Error(
-      'Either api_key or provider_id must be provided for authentication.',
+      'Either token or provider_id must be provided for authentication.',
     )
   }
 
@@ -132,17 +132,17 @@ function isProviderIdValid(
   return true
 }
 
-function isApiKeyValid(
-  apiKey: string,
-): apiKey is `${string}-${string}-${string}-${string}-${string}` {
+function isTokenValid(
+  token: string,
+): token is `${string}-${string}-${string}-${string}-${string}` {
   // Just check it's not empty and has reasonable length
   // Let the backend validate the actual format
-  if (!apiKey || apiKey.trim().length === 0) {
+  if (!token || token.trim().length === 0) {
     return false
   }
 
   // Reasonable max length check
-  if (apiKey.length > 255) {
+  if (token.length > 255) {
     return false
   }
 

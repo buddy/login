@@ -185,9 +185,9 @@ export async function exchangeTokenWithBuddy(
       throw new Error(`Invalid response format: Not a valid token or JSON`)
     }
 
-    const api_key = data.token || data.access_token || data.buddy_token
+    const token = data.token || data.access_token || data.buddy_token
 
-    if (!api_key || typeof api_key !== 'string') {
+    if (!token || typeof token !== 'string') {
       logger.debug('Response was valid JSON but no token field found')
       throw new Error(
         'No token found in response. Expected fields: token, access_token, or buddy_token',
@@ -196,7 +196,7 @@ export async function exchangeTokenWithBuddy(
 
     logger.debug(`Token successfully extracted from JSON response`)
 
-    return api_key
+    return token
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`Token exchange failed: ${error.message}`)

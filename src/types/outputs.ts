@@ -1,4 +1,4 @@
 export interface IOutputs {
-  api_key: string
+  token: string
   api_endpoint: string
 }

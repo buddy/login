@@ -19,7 +19,7 @@ jobs:
       - name: Login to Buddy
         uses: buddy/login@v1
         with:
-          api_key: ${{ secrets.BUDDY_API_KEY }}
+          token: ${{ secrets.BUDDY_PAT }}
           region: 'EU' # or 'US' (default)
 
       - name: Use Buddy API
@@ -34,6 +34,7 @@ jobs:
 ### Method 2: OIDC Authentication (No Stored Secrets)
 
 #### Setup
+
 1. Configure GitHub as an OIDC provider in your Buddy workspace
 2. Note the provider UUID
 3. Add to your workflow with `id-token: write` permission
@@ -80,21 +81,21 @@ jobs:
 
 ## Inputs
 
-| Input         | Required | Description                                                                                      |
-| ------------- | -------- | ------------------------------------------------------------------------------------------------ |
-| `api_key`     | No*      | Buddy API key (required if not using OIDC). Store in GitHub Secrets. UUID v4 format.            |
-| `provider_id` | No*      | UUID of your Buddy OIDC provider (required if not using API key)                                |
-| `region`      | No**     | Buddy region: `EU` or `US` (default: `US`)                                                      |
-| `api_url`     | No**     | Custom API URL for on-premise installations                                                     |
-| `audience`    | No       | OIDC audience (uses GitHub default if not set)                                                  |
-| `debug`       | No       | Enable debug logging (`true`/`false`)                                                           |
+| Input         | Required | Description                                                                                            |
+| ------------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| `token`       | Yes\*    | Buddy PAT (Personal Access Token) required if not using OIDC. Store in GitHub Secrets. UUID v4 format. |
+| `provider_id` | Yes\*    | UUID of your Buddy OIDC provider (required if not using token)                                         |
+| `region`      | No\*\*   | Buddy region: `EU` or `US` (default: `US`)                                                             |
+| `api_url`     | No\*\*   | Custom API URL for on-premise installations                                                            |
+| `audience`    | No       | OIDC audience (uses GitHub default if not set)                                                         |
+| `debug`       | No       | Enable debug logging (`true`/`false`)                                                                  |
 
-\* Either `api_key` or `provider_id` must be provided  
-\** Either `region` or `api_url` must be provided
+\* Either `token` or `provider_id` must be provided  
+\*\* Either `region` or `api_url` must be provided
 
 ## Outputs
 
-- `api_key` - The Buddy API key
+- `token` - The Buddy PAT (Personal Access Token)
 - `api_endpoint` - The Buddy API endpoint URL
 - Environment variables set:
   - `BUDDY_TOKEN` - The API key

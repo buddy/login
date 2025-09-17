@@ -43,11 +43,11 @@ jobs:
 
       - name: Verify step outputs
         run: |
-          if [ -z "${{ steps.buddy_login.outputs.api_key }}" ]; then
-            echo "Error: Step output api_key is not set"
+          if [ -z "${{ steps.buddy_login.outputs.token }}" ]; then
+            echo "Error: Step output token is not set"
             exit 1
           fi
-          echo "Success: Step output api_key is set"
+          echo "Success: Step output token is set"
 
           if [ -z "${{ steps.buddy_login.outputs.api_endpoint }}" ]; then
             echo "Error: Step output api_endpoint is not set"
@@ -74,7 +74,7 @@ jobs:
         uses: ./
         with:
           debug: true
-          api_key: ${{ secrets.BUDDY_PAT }}
+          token: ${{ secrets.BUDDY_PAT }}
           api_url: ${{ env.TEST_API_URL }}
 
       - name: Verify BUDDY_TOKEN is set
@@ -95,11 +95,11 @@ jobs:
 
       - name: Verify step outputs
         run: |
-          if [ -z "${{ steps.buddy_login.outputs.api_key }}" ]; then
-            echo "Error: Step output api_key is not set"
+          if [ -z "${{ steps.buddy_login.outputs.token }}" ]; then
+            echo "Error: Step output token is not set"
             exit 1
           fi
-          echo "Success: Step output api_key is set"
+          echo "Success: Step output token is set"
 
           if [ -z "${{ steps.buddy_login.outputs.api_endpoint }}" ]; then
             echo "Error: Step output api_endpoint is not set"
@@ -181,13 +181,13 @@ jobs:
           audience: 'this-is-a-very-long-audience-string-that-might-cause-issues-this-is-a-very-long-audience-string-that-might-cause-issues-this-is-a-very-long-audience-string-that-might-cause-issues-this-is-a-very-long-audience-string-that-might-cause-issues'
 
       # Mixed auth params tests
-      - name: Both api_key and provider_id provided
+      - name: Both token and provider_id provided
         continue-on-error: true
         uses: ./
         with:
           debug: true
           api_url: ${{ env.TEST_API_URL }}
-          api_key: ${{ secrets.BUDDY_PAT }}
+          token: ${{ secrets.BUDDY_PAT }}
           provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
           audience: 'buddy'
 
@@ -197,25 +197,25 @@ jobs:
         with:
           debug: true
           api_url: ${{ env.TEST_API_URL }}
-          api_key: ${{ secrets.BUDDY_PAT }}
+          token: ${{ secrets.BUDDY_PAT }}
           audience: 'buddy'
 
       # Wrong API key tests
-      - name: PAT - Invalid API key format
+      - name: PAT - Invalid token format
         continue-on-error: true
         uses: ./
         with:
           debug: true
           api_url: ${{ env.TEST_API_URL }}
-          api_key: 'invalid-api-key-format'
+          token: 'invalid-token-format'
 
-      - name: PAT - Empty API key
+      - name: PAT - Empty token
         continue-on-error: true
         uses: ./
         with:
           debug: true
           api_url: ${{ env.TEST_API_URL }}
-          api_key: ''
+          token: ''
 
       # Missing required params tests
       - name: No authentication params
