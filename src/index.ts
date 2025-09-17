@@ -3,11 +3,11 @@ import { login } from '@/login'
 import { normalizeError } from '@/utils/error/normalizeError'
 
 login()
-  .then(({ api_key, api_endpoint }) => {
-    setSecret(api_key)
-    exportVariable('BUDDY_TOKEN', api_key)
+  .then(({ token, api_endpoint }) => {
+    setSecret(token)
+    exportVariable('BUDDY_TOKEN', token)
     exportVariable('BUDDY_API_ENDPOINT', api_endpoint)
-    setOutput('api_key', api_key)
+    setOutput('token', token)
     setOutput('api_endpoint', api_endpoint)
     process.exit(0)
   })

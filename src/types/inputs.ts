@@ -13,7 +13,7 @@ type IInputsOIDCBase = IInputsAuthBase & {
 }
 
 type IInputsPATBase = IInputsAuthBase & {
-  api_key: `${string}-${string}-${string}-${string}-${string}`
+  token: `${string}-${string}-${string}-${string}-${string}`
 }
 
 type IInputsOIDCWithRegion = IInputsOIDCBase & {

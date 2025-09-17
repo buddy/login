@@ -22,19 +22,19 @@ export async function login(): Promise<IOutputs> {
     api_endpoint = API_URL.US
   }
 
-  if ('api_key' in inputs) {
+  if ('token' in inputs) {
     return {
-      api_key: inputs.api_key,
+      token: inputs.token,
       api_endpoint,
     }
   }
 
   // Handle OIDC authentication
   const jwt = await getIDToken(inputs.audience)
-  const api_key = await exchangeTokenWithBuddy(inputs, jwt)
+  const token = await exchangeTokenWithBuddy(inputs, jwt)
 
   return {
-    api_key,
+    token,
     api_endpoint,
   }
 }
