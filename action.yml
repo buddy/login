@@ -9,7 +9,7 @@ inputs:
     description: 'UUID of your Buddy OIDC provider configuration. Required for OIDC authentiaction. Recommendation: Store authentication tokens in GitHub Secrets to keep credentials secure and out of your codebase.'
     required: false
   token:
-    description: 'The PAT (Personal Access Token) when using token authentication. Required if not using OIDC authentication. Recommendation: Store authentication tokens in GitHub Secrets to keep credentials secure and out of your codebase.'
+    description: 'The PAT (Personal Access Token). Required if not using OIDC authentication. Recommendation: Store authentication tokens in GitHub Secrets to keep credentials secure and out of your codebase.'
     required: false
   region:
     description: 'Buddy region (EU or US). Cannot be used with api_url.'
@@ -26,7 +26,7 @@ inputs:
     required: false
 outputs:
   token:
-    description: 'Buddy PAT (Personal Access Token) that can be used to authenticate API requests in subsequent workflow steps. It is also exported as BUDDY_TOKEN variable'
+    description: 'Buddy token that can be used to authenticate API requests in subsequent workflow steps. It is also exported as BUDDY_TOKEN variable'
   api_endpoint:
     description: 'The URL to Buddy API endpoint. It is also exported as BUDDY_API_ENDPOINT variable.'
 branding:
