@@ -25,7 +25,7 @@ jobs:
       - name: Use Buddy API
         run: |
           # API endpoint is automatically set based on region
-          # EU: https://eu.api.buddy.works
+          # EU: https://api.eu.buddy.works
           # US: https://api.buddy.works
           curl -H "Authorization: Bearer $BUDDY_TOKEN" \
                "$BUDDY_API_ENDPOINT/workspaces"
@@ -63,7 +63,7 @@ jobs:
       - name: Use Buddy API
         run: |
           # API endpoint is automatically set based on region
-          # EU: https://eu.api.buddy.works
+          # EU: https://api.eu.buddy.works
           # US: https://api.buddy.works
           curl -H "Authorization: Bearer $BUDDY_TOKEN" \
                "$BUDDY_API_ENDPOINT/workspaces"
