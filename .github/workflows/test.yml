@@ -58,9 +58,20 @@ jobs:
       - name: Test API with token
         run: |
           echo "Testing OIDC token with Buddy API..."
-          curl -X GET "$BUDDY_API_ENDPOINT/user" \
+          HTTP_CODE=$(curl -w "%{http_code}" -o /tmp/response.json -X GET "$BUDDY_API_ENDPOINT/user" \
             -H "Authorization: Bearer $BUDDY_TOKEN" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json")
+
+          echo "HTTP Status Code: $HTTP_CODE"
+          echo "Response body:"
+          cat /tmp/response.json
+
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "ERROR: API request failed with status $HTTP_CODE"
+            exit 1
+          fi
+
+          echo "✓ API request succeeded"
 
   test-pat:
     name: Test PAT Authentication
@@ -110,9 +121,20 @@ jobs:
       - name: Test API with token
         run: |
           echo "Testing PAT with Buddy API..."
-          curl -X GET "$BUDDY_API_ENDPOINT/user" \
+          HTTP_CODE=$(curl -w "%{http_code}" -o /tmp/response.json -X GET "$BUDDY_API_ENDPOINT/user" \
             -H "Authorization: Bearer $BUDDY_TOKEN" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json")
+
+          echo "HTTP Status Code: $HTTP_CODE"
+          echo "Response body:"
+          cat /tmp/response.json
+
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "ERROR: API request failed with status $HTTP_CODE"
+            exit 1
+          fi
+
+          echo "✓ API request succeeded"
 
   test-error-scenarios-comprehensive:
     name: Test Error Scenarios (Comprehensive)
