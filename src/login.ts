@@ -17,7 +17,17 @@ export async function login(): Promise<IOutputs> {
   if ('api_url' in inputs && inputs.api_url) {
     api_endpoint = inputs.api_url
   } else if ('region' in inputs && inputs.region) {
-    api_endpoint = inputs.region === REGIONS.EU ? API_URL.EU : API_URL.US
+    switch (inputs.region) {
+      case REGIONS.EU:
+        api_endpoint = API_URL.EU
+        break
+      case REGIONS.AP:
+        api_endpoint = API_URL.AP
+        break
+      case REGIONS.US:
+        api_endpoint = API_URL.US
+        break
+    }
   } else {
     api_endpoint = API_URL.US
   }

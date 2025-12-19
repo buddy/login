@@ -12,7 +12,7 @@ inputs:
     description: 'The PAT (Personal Access Token). Required if not using OIDC authentication. Recommendation: Store authentication tokens in GitHub Secrets to keep credentials secure and out of your codebase.'
     required: false
   region:
-    description: 'Buddy region (EU or US). Cannot be used with api_url.'
+    description: 'Buddy region (EU, AP, or US). Cannot be used with api_url.'
     default: 'US'
     required: false
   api_url:

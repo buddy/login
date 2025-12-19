@@ -21,7 +21,14 @@ function getApiBaseUrl(input: IInputs): string {
   }
 
   if ('region' in input && input.region) {
-    return input.region === REGIONS.EU ? API_URL.EU : API_URL.US
+    switch (input.region) {
+      case REGIONS.EU:
+        return API_URL.EU
+      case REGIONS.AP:
+        return API_URL.AP
+      case REGIONS.US:
+        return API_URL.US
+    }
   }
 
   // Default fallback
