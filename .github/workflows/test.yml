@@ -114,8 +114,8 @@ jobs:
             -H "Authorization: Bearer $BUDDY_TOKEN" \
             -H "Content-Type: application/json"
 
-  test-error-scenarios:
-    name: Test Error Scenarios
+  test-error-scenarios-comprehensive:
+    name: Test Error Scenarios (Comprehensive)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -124,26 +124,45 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Wrong provider_id tests
-      - name: OIDC - Non-existent provider_id
+      # Test: No authentication provided - should fail
+      - name: Test - No authentication params
+        id: test_no_auth
         continue-on-error: true
         uses: ./
         with:
           debug: true
           api_url: ${{ env.TEST_API_URL }}
-          provider_id: 'non-existent-provider-id-12345'
-          audience: 'buddy'
 
-      - name: OIDC - Malformed provider_id (not UUID)
+      - name: Verify - No authentication should fail
+        run: |
+          if [ "${{ steps.test_no_auth.outcome }}" == "success" ]; then
+            echo "ERROR: Action should have failed but succeeded"
+            exit 1
+          fi
+          echo "✓ Action correctly failed when no authentication provided"
+
+      # Test: Invalid provider_id - should fail
+      - name: Test - Invalid provider_id (not UUID)
+        id: test_invalid_provider
         continue-on-error: true
         uses: ./
         with:
           debug: true
           api_url: ${{ env.TEST_API_URL }}
-          provider_id: 'not-a-uuid'
+          provider_id: 'not-a-uuid-just-random-text'
           audience: 'buddy'
 
-      - name: OIDC - Empty provider_id
+      - name: Verify - Invalid provider_id should fail
+        run: |
+          if [ "${{ steps.test_invalid_provider.outcome }}" == "success" ]; then
+            echo "ERROR: Action should have failed with invalid provider_id"
+            exit 1
+          fi
+          echo "✓ Action correctly failed with invalid provider_id"
+
+      # Test: Empty provider_id - should fail
+      - name: Test - Empty provider_id
+        id: test_empty_provider
         continue-on-error: true
         uses: ./
         with:
@@ -152,64 +171,36 @@ jobs:
           provider_id: ''
           audience: 'buddy'
 
-      # Wrong audience tests
-      - name: OIDC - Wrong audience
-        continue-on-error: true
-        uses: ./
-        with:
-          debug: true
-          api_url: ${{ env.TEST_API_URL }}
-          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
-          audience: 'wrong-audience'
+      - name: Verify - Empty provider_id should fail
+        run: |
+          if [ "${{ steps.test_empty_provider.outcome }}" == "success" ]; then
+            echo "ERROR: Action should have failed with empty provider_id"
+            exit 1
+          fi
+          echo "✓ Action correctly failed with empty provider_id"
 
-      - name: OIDC - Empty audience
+      # Test: Non-existent provider_id - should fail
+      - name: Test - Non-existent provider_id
+        id: test_nonexistent_provider
         continue-on-error: true
         uses: ./
         with:
           debug: true
           api_url: ${{ env.TEST_API_URL }}
-          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
-          audience: ''
-
-      - name: OIDC - Very long audience
-        continue-on-error: true
-        uses: ./
-        with:
-          debug: true
-          api_url: ${{ env.TEST_API_URL }}
-          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
-          audience: 'this-is-a-very-long-audience-string-that-might-cause-issues-this-is-a-very-long-audience-string-that-might-cause-issues-this-is-a-very-long-audience-string-that-might-cause-issues-this-is-a-very-long-audience-string-that-might-cause-issues'
-
-      # Mixed auth params tests
-      - name: Both token and provider_id provided
-        continue-on-error: true
-        uses: ./
-        with:
-          debug: true
-          api_url: ${{ env.TEST_API_URL }}
-          token: ${{ secrets.BUDDY_PAT }}
-          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
+          provider_id: '00000000-0000-0000-0000-000000000000'
           audience: 'buddy'
 
-      - name: PAT with audience parameter
-        continue-on-error: true
-        uses: ./
-        with:
-          debug: true
-          api_url: ${{ env.TEST_API_URL }}
-          token: ${{ secrets.BUDDY_PAT }}
-          audience: 'buddy'
+      - name: Verify - Non-existent provider_id should fail
+        run: |
+          if [ "${{ steps.test_nonexistent_provider.outcome }}" == "success" ]; then
+            echo "ERROR: Action should have failed with non-existent provider_id"
+            exit 1
+          fi
+          echo "✓ Action correctly failed with non-existent provider_id"
 
-      # Wrong API key tests
-      - name: PAT - Invalid token format
-        continue-on-error: true
-        uses: ./
-        with:
-          debug: true
-          api_url: ${{ env.TEST_API_URL }}
-          token: 'invalid-token-format'
-
-      - name: PAT - Empty token
+      # Test: Empty token - should fail
+      - name: Test - Empty token
+        id: test_empty_token
         continue-on-error: true
         uses: ./
         with:
@@ -217,24 +208,17 @@ jobs:
           api_url: ${{ env.TEST_API_URL }}
           token: ''
 
-      # Missing required params tests
-      - name: No authentication params
-        continue-on-error: true
-        uses: ./
-        with:
-          debug: true
-          api_url: ${{ env.TEST_API_URL }}
+      - name: Verify - Empty token should fail
+        run: |
+          if [ "${{ steps.test_empty_token.outcome }}" == "success" ]; then
+            echo "ERROR: Action should have failed with empty token"
+            exit 1
+          fi
+          echo "✓ Action correctly failed with empty token"
 
-      - name: OIDC - Missing audience (default should work)
-        continue-on-error: true
-        uses: ./
-        with:
-          debug: true
-          api_url: ${{ env.TEST_API_URL }}
-          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
-
-      # Wrong API URL tests
-      - name: Invalid API URL format
+      # Test: Invalid API URL format - should fail
+      - name: Test - Invalid API URL format
+        id: test_invalid_url
         continue-on-error: true
         uses: ./
         with:
@@ -243,7 +227,17 @@ jobs:
           provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
           audience: 'buddy'
 
-      - name: HTTP instead of HTTPS
+      - name: Verify - Invalid API URL should fail
+        run: |
+          if [ "${{ steps.test_invalid_url.outcome }}" == "success" ]; then
+            echo "ERROR: Action should have failed with invalid API URL"
+            exit 1
+          fi
+          echo "✓ Action correctly failed with invalid API URL"
+
+      # Test: HTTP instead of HTTPS - should fail
+      - name: Test - HTTP instead of HTTPS
+        id: test_http_url
         continue-on-error: true
         uses: ./
         with:
@@ -252,31 +246,75 @@ jobs:
           provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
           audience: 'buddy'
 
-      - name: Wrong API endpoint
+      - name: Verify - HTTP URL should fail
+        run: |
+          if [ "${{ steps.test_http_url.outcome }}" == "success" ]; then
+            echo "ERROR: Action should have failed with HTTP URL (requires HTTPS)"
+            exit 1
+          fi
+          echo "✓ Action correctly failed with HTTP URL"
+
+      # Test: Invalid region - should fail
+      - name: Test - Invalid region
+        id: test_invalid_region
         continue-on-error: true
         uses: ./
         with:
           debug: true
-          api_url: 'https://wrong.api.endpoint.com'
-          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
-          audience: 'buddy'
+          region: 'INVALID'
+          token: ${{ secrets.BUDDY_PAT }}
 
-      # Region tests
-      - name: Invalid region
+      - name: Verify - Invalid region should fail
+        run: |
+          if [ "${{ steps.test_invalid_region.outcome }}" == "success" ]; then
+            echo "ERROR: Action should have failed with invalid region"
+            exit 1
+          fi
+          echo "✓ Action correctly failed with invalid region"
+
+      # Test: Wrong API endpoint - should fail
+      - name: Test - Wrong API endpoint (connection failure)
+        id: test_wrong_endpoint
         continue-on-error: true
         uses: ./
         with:
           debug: true
-          region: 'invalid-region'
+          api_url: 'https://httpstat.us/500'
           provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
           audience: 'buddy'
 
-      - name: Both api_url and region provided
+      - name: Verify - Wrong endpoint should fail
+        run: |
+          if [ "${{ steps.test_wrong_endpoint.outcome }}" == "success" ]; then
+            echo "ERROR: Action should have failed with wrong endpoint"
+            exit 1
+          fi
+          echo "✓ Action correctly failed with wrong endpoint"
+
+      # Test: Empty audience - should fail
+      - name: Test - Empty audience
+        id: test_empty_audience
         continue-on-error: true
         uses: ./
         with:
           debug: true
           api_url: ${{ env.TEST_API_URL }}
-          region: 'US'
           provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
-          audience: 'buddy'
+          audience: ''
+
+      - name: Verify - Empty audience should fail
+        run: |
+          if [ "${{ steps.test_empty_audience.outcome }}" == "success" ]; then
+            echo "ERROR: Action should have failed with empty audience"
+            exit 1
+          fi
+          echo "✓ Action correctly failed with empty audience"
+
+      # Summary
+      - name: All error scenario tests passed
+        run: |
+          echo "================================================"
+          echo "✓ All error scenarios correctly handled"
+          echo "✓ Action properly fails with invalid inputs"
+          echo "✓ Token validation working as expected"
+          echo "================================================"
