@@ -1,8 +1,0 @@
-.idea/
-.vscode/
-.claude/
-node_modules/
-
-.env
-.secrets
-.DS_Store

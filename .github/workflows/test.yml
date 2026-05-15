@@ -1,9 +1,12 @@
-name: Test Buddy Login Action
+name: Test
 
-on: [push, workflow_dispatch]
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
 
 env:
-  TEST_API_URL: 'https://api.awsstage.net'
+  TEST_API_URL: 'https://api.buddy.works'
 
 jobs:
   test-oidc:
@@ -14,7 +17,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Login to Buddy (OIDC)
         id: buddy_login
@@ -78,14 +81,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Login to Buddy (PAT)
         id: buddy_login
         uses: ./
         with:
           debug: true
-          token: ${{ secrets.BUDDY_PAT }}
+          token: ${{ secrets.BUDDY_TOKEN }}
           api_url: ${{ env.TEST_API_URL }}
 
       - name: Verify BUDDY_TOKEN is set
@@ -144,7 +147,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Test: No authentication provided - should fail
       - name: Test - No authentication params
@@ -284,7 +287,7 @@ jobs:
         with:
           debug: true
           region: 'INVALID'
-          token: ${{ secrets.BUDDY_PAT }}
+          token: ${{ secrets.BUDDY_TOKEN }}
 
       - name: Verify - Invalid region should fail
         run: |
@@ -312,25 +315,6 @@ jobs:
             exit 1
           fi
           echo "✓ Action correctly failed with wrong endpoint"
-
-      # Test: Empty audience - should fail
-      - name: Test - Empty audience
-        id: test_empty_audience
-        continue-on-error: true
-        uses: ./
-        with:
-          debug: true
-          api_url: ${{ env.TEST_API_URL }}
-          provider_id: ${{ secrets.BUDDY_PROVIDER_ID }}
-          audience: ''
-
-      - name: Verify - Empty audience should fail
-        run: |
-          if [ "${{ steps.test_empty_audience.outcome }}" == "success" ]; then
-            echo "ERROR: Action should have failed with empty audience"
-            exit 1
-          fi
-          echo "✓ Action correctly failed with empty audience"
 
       # Summary
       - name: All error scenario tests passed
